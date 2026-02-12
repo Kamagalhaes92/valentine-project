@@ -13,6 +13,11 @@ const DIALOGUES = [
 ];
 
 export default function Intro() {
+  const playSfx = (src, volume = 0.9) => {
+    const s = new Audio(src);
+    s.volume = volume;
+    s.play().catch(() => {});
+  };
   const navigate = useNavigate();
   const audioRef = useContext(MusicContext);
 
@@ -193,7 +198,11 @@ export default function Intro() {
         {/* Door */}
         <button
           className={`door ${duckNearDoor ? "door--glow" : ""}`}
-          onClick={() => duckNearDoor && navigate("/valentine")}
+          onClick={() => {
+            if (!duckNearDoor) return;
+            playSfx("/door-aww.mp3", 0.9);
+            setTimeout(() => navigate("/valentine"), 250); // tiny delay feels cute
+          }}
           disabled={!duckNearDoor}
           aria-label="Enter the door"
         />

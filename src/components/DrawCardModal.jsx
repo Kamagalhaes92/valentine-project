@@ -116,9 +116,13 @@ export default function DrawCardModal({ onClose }) {
     setPreviewUrl("");
   };
 
-  const makePreview = () => {
-    const url = buildFinalCardDataUrl(); // or your current preview builder
+  const updatePreviewImage = () => {
+    const url = buildFinalCardDataUrl(); // or canvas.toDataURL if you haven't built the final card yet
     setPreviewUrl(url);
+  };
+
+  const makePreview = () => {
+    updatePreviewImage();
     setShowPreview(true);
   };
 
@@ -169,7 +173,7 @@ export default function DrawCardModal({ onClose }) {
     ctx.fillText(emoji, x, y);
     ctx.restore();
 
-    makePreview();
+    updatePreviewImage(); // ✅ update image silently, don't open modal
   };
 
   const buildFinalCardDataUrl = () => {

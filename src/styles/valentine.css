@@ -101,9 +101,11 @@
 }
 
 .questionTitle {
-  font-size: clamp(24px, 4vw, 40px);
-  font-weight: 900;
-  color: #2b2b2b;
+  font-size: clamp(30px, 6vw, 40px);
+
+  color: #f16c68;
+  -webkit-text-stroke: 1px #5ec6de;
+  font-family: "Gorditas", serif;
 }
 
 /* Heart button look */
@@ -149,7 +151,7 @@
   border-radius: 18px;
   font-weight: 700;
   cursor: pointer;
-  background: rgb(60, 14, 44);
+  background: #5ec6de;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
@@ -190,6 +192,11 @@
   font-size: 26px;
   font-weight: 800;
   color: #ff4f86;
+  background-color: #f0f1f1;
+  border: 2px solid #5ec6de;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-family: "Annie Use Your Telescope", cursive;
 }
 
 .yesScreen {
@@ -206,19 +213,42 @@
   text-align: center;
 }
 
-.yesMessage {
-  font-size: 26px;
-  font-weight: 800;
-  color: #ff4f86;
-  background: rgba(255, 255, 255, 0.75);
-  padding: 10px 14px;
-  border-radius: 16px;
-}
-
 .yesGif {
   width: min(520px, 80vw);
   height: auto;
   pointer-events: none;
+}
+
+.fallingHearts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 70; /* above background and ducks, below your top controls if needed */
+  overflow: hidden;
+}
+
+.fallHeart {
+  position: absolute;
+  top: -40px;
+  background: url("/heart2.png") center / contain no-repeat;
+  opacity: 0.95;
+  animation-name: fallDown;
+  animation-timing-function: ease-in;
+  animation-iteration-count: 1;
+}
+
+@keyframes fallDown {
+  0% {
+    transform: translateY(-40px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(260deg);
+    opacity: 0.9;
+  }
 }
 /* Mobile */
 @media (max-width: 768px) {

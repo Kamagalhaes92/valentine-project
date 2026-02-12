@@ -5,10 +5,31 @@ import DrawCardModal from "../components/DrawCardModal";
 
 export default function Valentine() {
   const audioRef = useContext(MusicContext);
+  const [fallingHearts, setFallingHearts] = useState([]);
+  const playSfx = (src, volume = 0.9) => {
+    const s = new Audio(src);
+    s.volume = volume;
+    s.play().catch(() => {});
+  };
 
   const [yes, setYes] = useState(false);
   const [showCanvas, setShowCanvas] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+
+  const spawnHearts = () => {
+    const batch = Array.from({ length: 18 }).map(() => ({
+      id: crypto.randomUUID(),
+      left: Math.random() * 100, // vw
+      delay: Math.random() * 0.6, // seconds
+      size: 18 + Math.random() * 22, // px
+      dur: 2.8 + Math.random() * 1.6, // seconds
+    }));
+
+    setFallingHearts(batch);
+
+    // clear after animation ends
+    setTimeout(() => setFallingHearts([]), 5200);
+  };
 
   const duckImages = useMemo(
     () => [
@@ -99,6 +120,21 @@ export default function Valentine() {
           Canvas ✍️
         </button>
       </div>
+      <div className="fallingHearts" aria-hidden="true">
+        {fallingHearts.map((h) => (
+          <div
+            key={h.id}
+            className="fallHeart"
+            style={{
+              left: `${h.left}vw`,
+              width: `${h.size}px`,
+              height: `${h.size}px`,
+              animationDelay: `${h.delay}s`,
+              animationDuration: `${h.dur}s`,
+            }}
+          />
+        ))}
+      </div>
 
       {/* Ducks scattered */}
       <div className="duckLayer" aria-hidden="true">
@@ -139,10 +175,16 @@ export default function Valentine() {
             <div className="questionTitle">Will you be my valentine?</div>
 
             <div className="buttonRow">
-              <button className="heartBtn" onClick={() => setYes(true)}>
+              <button
+                className="heartBtn heartBtn--yes"
+                onClick={() => {
+                  setYes(true);
+                  playSfx("/clap.mp3", 0.9);
+                  spawnHearts();
+                }}
+              >
                 Yes
               </button>
-
               <button
                 className={`heartBtn ${isRunning ? "noBtn--free" : ""}`}
                 style={
