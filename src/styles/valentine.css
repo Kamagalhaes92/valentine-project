@@ -1,0 +1,233 @@
+.valentinePage {
+  min-height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+  background: url("/background.png") center / cover no-repeat;
+}
+
+/* Bottom corner decoration */
+.cornerSix {
+  position: absolute;
+  bottom: 0;
+  width: min(260px, 42vw);
+  height: auto;
+  pointer-events: none;
+  z-index: 5;
+}
+.cornerSix--left {
+  left: 0;
+}
+.cornerSix--right {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* Top-right controls */
+.rightControls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.iconBtn {
+  border: none;
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.88);
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Ducks behind everything */
+.duckLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sceneDuck {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  opacity: 0.95;
+  will-change: transform;
+}
+
+.sceneDuck--party {
+  animation: duckParty 6.5s ease-in-out infinite;
+}
+
+@keyframes duckParty {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  25% {
+    transform: translate(-50%, -52%) rotate(6deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  75% {
+    transform: translate(-50%, -48%) rotate(-6deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+/* Frame */
+.questionFrame {
+  position: relative;
+  z-index: 10;
+  width: min(760px, 95vw);
+  aspect-ratio: 4 / 2.2;
+  margin: 0 auto;
+  top: 24vh;
+  background: url("/frame.png") center / contain no-repeat;
+  display: grid;
+  place-items: center;
+}
+
+.questionPanel {
+  width: 78%;
+  text-align: center;
+}
+
+.questionTitle {
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 900;
+  color: #2b2b2b;
+}
+
+/* Heart button look */
+.heartBtn {
+  width: 140px;
+  height: 120px;
+  border: none;
+  cursor: pointer;
+  background: url("/heartBtn.png") center / contain no-repeat;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ff4f86;
+  display: grid;
+  place-items: center;
+}
+
+/* YES button stays inside the frame */
+.heartBtn--yes {
+  margin-top: 18px;
+}
+
+/* NO button becomes “free roaming” */
+.noBtn {
+  position: fixed; /* IMPORTANT: not relative to frame */
+  left: 60vw;
+  top: 60vh;
+  transform: translate(-50%, -50%);
+  z-index: 90; /* above frame */
+  transition:
+    left 160ms ease,
+    top 160ms ease,
+    transform 160ms ease;
+}
+
+.noBtn:hover {
+  transform: translate(-50%, -50%) scale(1.1) rotate(-5deg);
+}
+
+/* Back button */
+.backBtn {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgb(60, 14, 44);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.buttonRow {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px; /* distance between Yes and No */
+}
+
+/* Heart button base */
+.heartBtn {
+  width: 140px;
+  height: 120px;
+  border: none;
+  cursor: pointer;
+  background: url("/heartBtn.png") center / contain no-repeat;
+  font-size: 26px;
+  font-weight: 900;
+  color: #ff4f86;
+  display: grid;
+  place-items: center;
+}
+
+/* When No starts running */
+.noBtn--free {
+  position: fixed;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+  transition:
+    left 160ms ease,
+    top 160ms ease,
+    transform 160ms ease;
+}
+
+.yesMessage {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ff4f86;
+}
+
+.yesScreen {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  text-align: center;
+}
+
+.yesMessage {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ff4f86;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 10px 14px;
+  border-radius: 16px;
+}
+
+.yesGif {
+  width: min(520px, 80vw);
+  height: auto;
+  pointer-events: none;
+}
+/* Mobile */
+@media (max-width: 768px) {
+  .yesCenter {
+    top: 48%;
+    width: min(420px, 86vw);
+  }
+  .questionFrame {
+    top: 22vh;
+    width: min(520px, 95vw);
+  }
+}

@@ -1,0 +1,250 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 200;
+}
+
+.modal {
+  width: min(860px, 95vw);
+  height: min(640px, 85vh);
+  background: #8ad2db;
+  color: black;
+  border-radius: 18px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.modalTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px;
+}
+
+.modalTitle {
+  font-weight: 800;
+}
+
+.modalClose {
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.drawCanvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  background: #ffe6f0; /* soft pink */
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 14px;
+}
+
+.modalActions button {
+  border: none;
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.brush {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+
+.modal--big {
+  width: min(980px, 96vw);
+  height: min(760px, 90vh);
+}
+
+.metaRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 0 14px 10px;
+  flex-wrap: wrap;
+}
+
+.metaLabel {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.metaInput {
+  width: min(360px, 70vw);
+  border: 1px solid #ffe6f0;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background-color: aliceblue;
+  color: grey;
+}
+
+.emojiRow {
+  padding: 0 14px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.emojiTitle {
+  font-weight: 800;
+}
+
+.emojiBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.emojiBtn {
+  border: none;
+  cursor: pointer;
+  border-radius: 14px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  font-size: 20px;
+}
+
+.drawCanvas {
+  width: 100%;
+  height: 44vh; /* bigger */
+  border-radius: 16px;
+  touch-action: none;
+}
+
+.drawCanvas--pink {
+  background: #ffe6f0;
+}
+
+.canvasWrap {
+  flex: 1;
+  min-height: 300px; /* or whatever */
+}
+
+.previewRow {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 12px 0;
+  z-index: 5;
+}
+
+.previewRow button {
+  border: none;
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.previewBox {
+  padding: 0 14px 14px;
+}
+
+.previewTitle {
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.previewImg {
+  width: min(420px, 90vw);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+.emojiBtn--active {
+  outline: 3px solid rgba(123, 63, 228, 0.35);
+  transform: scale(1.08);
+}
+
+.stampHint {
+  padding: 0 14px 10px;
+  font-weight: 800;
+}
+
+.stampHint span {
+  font-size: 22px;
+}
+.previewOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  padding: 18px;
+}
+
+.previewModal {
+  width: min(720px, 95vw);
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  padding: 14px;
+}
+
+.previewTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px 10px;
+}
+
+.previewHeading {
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #ff4f86;
+}
+
+.previewClose {
+  border: 2px solid #ff4f86;
+  background: #8ad2db;
+  color: #7a2b44;
+  border-radius: 18px;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.previewBigImg {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  display: block;
+}
+
+.previewActions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 6px 4px;
+}
+
+.previewActions button {
+  border: none;
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  background: #ffb6cf;
+}

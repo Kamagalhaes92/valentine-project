@@ -1,0 +1,290 @@
+/* Make page truly full-screen */
+.intro {
+  min-height: 100vh;
+  width: 100vw;
+  background: #fff;
+}
+
+/* Scene fills the whole viewport */
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+
+  /* your background image */
+  background: url("/background.png") center / cover no-repeat;
+}
+
+/* Duck: replace with your duck asset (png/svg) */
+.duck {
+  position: absolute;
+  width: 20rem;
+  height: 20rem;
+  transform: translate(-50%, -50%);
+  background: url("/duck.png") center / contain no-repeat;
+  transition: left 140ms linear;
+}
+.duck--jump {
+  animation: hop 220ms ease-out;
+}
+@keyframes hop {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -70%);
+  }
+  100% {
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Bubble */
+.bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: #d77a8f;
+  color: #000000;
+  padding: 20px 24px;
+  border-radius: 18px;
+  font-weight: 700;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  bottom: -8px;
+  width: 14px;
+  height: 14px;
+  background: #d77a8f;
+  transform: rotate(45deg);
+}
+
+.musicToggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+/* Hearts that stay */
+.heart {
+  position: absolute;
+  width: 65px;
+  height: 65px;
+  background: url("/heart.png") center / contain no-repeat;
+  opacity: 0.95;
+}
+
+/* Door clickable zone (match your image placement) */
+.door {
+  position: absolute;
+  right: -2%;
+  top: 25%;
+  width: 40vw; /* responsive */
+  max-width: 600px;
+  min-width: 90px;
+  height: 50vh; /* responsive */
+  background: url("/door.png") center / contain no-repeat;
+  border: none;
+  cursor: pointer;
+}
+
+.door:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.door--glow {
+  transition: transform 0.3s ease-in-out;
+  transform: scale(1.2);
+}
+
+/* Mobile controls */
+.controls {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+}
+.ctrl {
+  color: rgb(38, 46, 74);
+  width: 70px;
+  height: 60px;
+  border-radius: 25%;
+  border: 3px solid rgb(119, 150, 195);
+  background: #ebd29c;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.duck--left {
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+
+/* keep the jump working while flipped */
+.duck--jump {
+  animation: hop 220ms ease-out;
+}
+@keyframes hop {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -70%);
+  }
+  100% {
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* when both classes exist, prefer the flipped version during hop */
+.duck.duck--left.duck--jump {
+  animation: hopLeft 220ms ease-out;
+}
+@keyframes hopLeft {
+  0% {
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+  50% {
+    transform: translate(-50%, -70%) scaleX(-1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+}
+
+.duck--left {
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+
+/* keep the jump working while flipped */
+.duck--jump {
+  animation: hop 220ms ease-out;
+}
+@keyframes hop {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -70%);
+  }
+  100% {
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* when both classes exist, prefer the flipped version during hop */
+.duck.duck--left.duck--jump {
+  animation: hopLeft 220ms ease-out;
+}
+@keyframes hopLeft {
+  0% {
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+  50% {
+    transform: translate(-50%, -70%) scaleX(-1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+}
+
+/* Balloons (two copies) */
+.balloon {
+  position: absolute;
+  bottom: 20px;
+  width: min(280px, 35vw);
+  height: auto;
+  pointer-events: none;
+  z-index: 2;
+
+  animation: floatSway 6s ease-in-out infinite;
+}
+
+.balloon--left {
+  left: 12%;
+}
+
+.balloon--right {
+  right: 12%;
+  animation-delay: 5s; /* makes them feel natural */
+}
+
+@keyframes floatSway {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  25% {
+    transform: translate(6px, -6px) rotate(1deg);
+  }
+  50% {
+    transform: translate(0px, -10px) rotate(0deg);
+  }
+  75% {
+    transform: translate(-6px, -6px) rotate(-1deg);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+}
+/* Top middle decor */
+.decorTop {
+  position: absolute;
+  top: -10rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, 85vw); /* adjust size */
+  height: auto;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* =========================
+   MOBILE STYLES
+========================= */
+
+@media (max-width: 768px) {
+  .duck {
+    width: 10rem; /* smaller duck */
+    height: 10rem;
+  }
+
+  .door {
+    width: 30vw;
+    height: 40vh;
+    right: 4%;
+    top: 35%;
+  }
+
+  .bubble {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .balloon {
+    width: 28vw;
+    bottom: 10px;
+  }
+
+  .decorTop {
+    width: 70vw;
+    top: -5rem;
+  }
+
+  .heart {
+    width: 25px;
+    height: 25px;
+  }
+}
