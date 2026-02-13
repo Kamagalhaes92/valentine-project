@@ -86,11 +86,16 @@
 .questionFrame {
   position: relative;
   z-index: 10;
-  width: min(760px, 95vw);
-  aspect-ratio: 4 / 2.2;
+
+  width: min(760px, 94vw);
   margin: 0 auto;
-  top: 24vh;
+
+  /* centers vertically without hard-coded top */
+  margin-top: clamp(160px, 22vh, 260px);
+
   background: url("/frame.png") center / contain no-repeat;
+  aspect-ratio: 4 / 2.2;
+
   display: grid;
   place-items: center;
 }
@@ -250,14 +255,198 @@
     opacity: 0.9;
   }
 }
-/* Mobile */
-@media (max-width: 768px) {
-  .yesCenter {
-    top: 48%;
-    width: min(420px, 86vw);
+
+/* =========================
+   CUTE MODERN HEART CTA
+========================= */
+
+.ctaHeart {
+  position: relative;
+  border: none;
+  cursor: pointer;
+
+  width: 170px;
+  height: 56px;
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  /* modern candy-glass */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 170, 210, 0.92),
+    rgba(120, 210, 255, 0.72)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.6);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 22px 55px rgba(255, 120, 180, 0.22),
+    0 12px 26px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  transition:
+    transform 140ms ease,
+    filter 140ms ease,
+    box-shadow 140ms ease;
+
+  /* tiny wiggle every few seconds */
+  animation: ctaWiggle 6s ease-in-out infinite;
+}
+
+@keyframes ctaWiggle {
+  0%,
+  86%,
+  100% {
+    transform: translateY(0);
   }
+  89% {
+    transform: translateY(-2px) rotate(-1deg);
+  }
+  92% {
+    transform: translateY(-2px) rotate(1deg);
+  }
+  95% {
+    transform: translateY(-1px) rotate(0deg);
+  }
+}
+
+.ctaHeart:hover {
+  filter: brightness(1.03);
+  transform: translateY(-2px);
+  box-shadow:
+    0 26px 70px rgba(255, 120, 180, 0.28),
+    0 16px 34px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.ctaHeart:active {
+  transform: translateY(2px) scale(0.99);
+  filter: brightness(1.02);
+}
+
+/* Heart icon bubble */
+.ctaHeart::before {
+  content: "💗";
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 12px 25px rgba(0, 0, 0, 0.12);
+
+  transform: translateY(-0.5px);
+}
+
+/* Label */
+.ctaLabel {
+  font-family: "Gorditas", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  color: rgba(58, 43, 46, 0.92);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.45);
+  text-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+}
+
+/* soft halo glow behind */
+.ctaHalo {
+  position: absolute;
+  inset: -14px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 30% 40%,
+    rgba(255, 220, 245, 0.85),
+    rgba(160, 235, 255, 0.55),
+    transparent 72%
+  );
+  filter: blur(16px);
+  opacity: 0.8;
+  z-index: -1;
+  animation: ctaPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes ctaPulse {
+  0%,
+  100% {
+    transform: scale(0.98);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.95;
+  }
+}
+
+/* tiny sparkles around */
+.ctaSparkles {
+  position: absolute;
+  inset: -28px;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.75) 1px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 2px, transparent 4px);
+
+  background-size:
+    90px 90px,
+    140px 140px,
+    210px 210px;
+  background-position:
+    0 0,
+    30px 60px,
+    80px 20px;
+
+  opacity: 0.55;
+  animation: sparkleDrift 2.8s linear infinite;
+}
+
+@keyframes sparkleDrift {
+  to {
+    transform: translateY(16px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ctaHeart {
+    width: 152px;
+    height: 52px;
+  }
+  .ctaLabel {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 768px) {
   .questionFrame {
-    top: 22vh;
-    width: min(520px, 95vw);
+    width: min(520px, 94vw);
+    margin-top: clamp(150px, 18vh, 200px);
+  }
+
+  .questionTitle {
+    font-size: clamp(22px, 6.2vw, 32px);
+  }
+
+  .buttonRow {
+    gap: 18px;
+  }
+
+  .heartBtn {
+    width: 118px;
+    height: 102px;
+    font-size: 22px;
   }
 }

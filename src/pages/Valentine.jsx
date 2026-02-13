@@ -2,6 +2,7 @@ import { useMemo, useState, useContext } from "react";
 import "../styles/valentine.css";
 import { MusicContext } from "../App";
 import DrawCardModal from "../components/DrawCardModal";
+import HamburgerMenu from "../components/HamburgerMenu";
 
 export default function Valentine() {
   const audioRef = useContext(MusicContext);
@@ -90,6 +91,7 @@ export default function Valentine() {
 
   return (
     <div className="valentinePage">
+      <HamburgerMenu />
       <img
         className="cornerSix cornerSix--left"
         src="/six.png"
@@ -113,11 +115,13 @@ export default function Valentine() {
         </button>
 
         <button
-          className="iconBtn"
+          className="ctaHeart"
           onClick={() => setShowCanvas(true)}
-          aria-label="Open canvas"
+          aria-label="Create card"
         >
-          Canvas ✍️
+          <span className="heartGlow" aria-hidden="true" />
+          <span className="heartSparkles" aria-hidden="true" />
+          <span className="heartText">Create Card</span>
         </button>
       </div>
       <div className="fallingHearts" aria-hidden="true">

@@ -19,14 +19,27 @@
 
 .introTitle {
   margin: 0;
-  text-align: center;
-  font-family: "Ms Madi", cursive;
+  font-family: "Gorditas", sans-serif;
   font-size: clamp(28px, 5vw, 56px);
-  color: rgba(58, 43, 46, 0.9);
+  letter-spacing: 0.5px;
+
+  color: #6c95bf;
+
+  /* pink outline */
+  -webkit-text-stroke: 2px rgba(255, 120, 170, 0.9);
+
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6),
-    0 10px 30px rgba(0, 0, 0, 0.12);
-  pointer-events: none;
+    0 2px 0 rgba(255, 255, 255, 0.7),
+    0 20px 45px rgba(0, 0, 0, 0.18);
+}
+
+.titleSub {
+  margin-top: 6px;
+  font-size: clamp(14px, 2vw, 18px);
+  font-family: "Cormorant Garamond", serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(58, 43, 46, 0.65);
 }
 /* =========================
    3D GLASS TITLE
@@ -34,48 +47,54 @@
 
 .titleWrap {
   position: absolute;
-  top: clamp(72px, 10vh, 120px);
+  top: clamp(70px, 10vh, 120px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 12;
+  z-index: 20;
 
-  width: fit-content;
-  max-width: min(92vw, 760px);
-  padding: 12px 18px;
+  width: min(760px, 92vw);
+  padding: 18px 22px 14px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  border-radius: 32px;
 
-  border-radius: 999px;
+  /* layered glass */
   background: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.62),
-    rgba(255, 255, 255, 0.22)
+    rgba(255, 255, 255, 0.72),
+    rgba(255, 255, 255, 0.28)
   );
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 
+  border: 1px solid rgba(255, 255, 255, 0.65);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  /* depth stack */
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -10px 18px rgba(255, 170, 210, 0.18);
+    0 28px 70px rgba(0, 0, 0, 0.16),
+    0 0 45px rgba(255, 180, 220, 0.35),
+    inset 0 2px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -18px 30px rgba(255, 170, 210, 0.18);
+
+  text-align: center;
+  overflow: hidden;
 }
 /* glow aura behind the title */
 .titleWrap::before {
   content: "";
   position: absolute;
-  inset: -18px;
-  border-radius: 999px;
+  inset: -30px;
+  border-radius: 40px;
+
   background: radial-gradient(
-    circle at 50% 40%,
-    rgba(255, 220, 240, 0.85),
+    ellipse at center,
+    rgba(255, 190, 230, 0.65),
+    rgba(255, 220, 245, 0.45),
     transparent 70%
   );
-  filter: blur(18px);
-  opacity: 0.65;
+
+  filter: blur(35px);
+  opacity: 0.75;
   z-index: -1;
 }
 
@@ -225,6 +244,210 @@
 /* =========================
    TOP UI
 ========================= */
+
+/* =========================
+   HAMBURGER MENU (SLEEK GLASS)
+========================= */
+
+.menu {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 40;
+}
+
+.menuBtn {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.14),
+    0 0 30px rgba(42, 168, 194, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    filter 140ms ease;
+}
+
+.menuBtn:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.menuBtn span {
+  width: 22px;
+  height: 2px;
+  border-radius: 999px;
+  background: #2aa8c2;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+/* turn into X */
+.menuBtn.isOpen span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.menuBtn.isOpen span:nth-child(2) {
+  opacity: 0;
+}
+.menuBtn.isOpen span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.menuBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: none;
+  z-index: 35;
+}
+
+/* panel */
+.menuPanel {
+  position: absolute;
+  top: 62px;
+  left: 0;
+  width: min(260px, 74vw);
+  padding: 14px;
+  border-radius: 18px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.58),
+    rgba(255, 255, 255, 0.22)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  z-index: 45;
+}
+
+.menuTitle {
+  font-family: "Cormorant Garamond", serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(58, 43, 46, 0.65);
+  margin-bottom: 10px;
+}
+
+.menuItem {
+  width: 100%;
+  text-align: left;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(58, 43, 46, 0.92);
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    background 120ms ease;
+  margin-bottom: 10px;
+}
+
+.menuItem:last-child {
+  margin-bottom: 0;
+}
+
+.menuItem:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.menuItem:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+/* =========================
+   ABOUT MODAL
+========================= */
+.aboutModal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, 92vw);
+  z-index: 60;
+
+  padding: 16px 16px 14px;
+  border-radius: 22px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.62),
+    rgba(255, 255, 255, 0.22)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
+}
+
+.aboutHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.aboutTitle {
+  font-family: "Gorditas", sans-serif;
+  font-size: 22px;
+  color: rgba(58, 43, 46, 0.92);
+}
+
+.aboutClose {
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.aboutText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+  color: rgba(58, 43, 46, 0.78);
+  font-family: "Cormorant Garamond", serif;
+}
+
+.aboutActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.aboutBtn {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+}
 .musicToggle {
   position: absolute;
   top: 16px;
@@ -655,31 +878,118 @@
 /* =========================
    MOBILE CONTROLS
 ========================= */
+/* =========================
+   SLEEK GLASS CONTROLS
+========================= */
+
 .controls {
   position: absolute;
   left: 50%;
-  bottom: 18px;
+  bottom: calc(env(safe-area-inset-bottom) + 14px);
   transform: translateX(-50%);
+  z-index: 30;
+
   display: flex;
   gap: 12px;
-  z-index: 20;
+  padding: 8px 10px;
+
+  border-radius: 999px;
+
+  /* ultra subtle glass tray */
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
+/* individual buttons */
 .ctrl {
-  color: rgb(38, 46, 74);
-  width: 70px;
-  height: 60px;
-  border-radius: 25%;
-  border: 3px solid rgb(119, 150, 195);
-  background: #ebd29c;
+  width: 60px;
+  height: 52px;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255, 200, 230, 0.6);
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 230, 245, 0.7),
+    rgba(220, 245, 255, 0.35)
+  );
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 16px 32px rgba(255, 150, 200, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+  display: grid;
+  place-items: center;
+
   font-size: 20px;
-  cursor: pointer;
+  font-weight: 600;
+  color: rgba(60, 40, 60, 0.85);
+
+  transition:
+    transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 140ms ease,
+    filter 140ms ease;
+
+  -webkit-tap-highlight-color: transparent;
 }
 
+/* hover (desktop only) */
+@media (hover: hover) {
+  .ctrl:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 22px 38px rgba(255, 150, 210, 0.35),
+      0 0 22px rgba(140, 210, 255, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+}
+
+/* press down effect */
 .ctrl:active {
-  transform: scale(0.98);
+  transform: translateY(3px) scale(0.97);
+
+  box-shadow:
+    0 10px 20px rgba(255, 120, 190, 0.35),
+    0 0 25px rgba(120, 200, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  filter: brightness(1.05);
 }
 
+.ctrl::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 20px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 180, 220, 0.35),
+    rgba(140, 220, 255, 0.25),
+    transparent 70%
+  );
+  filter: blur(12px);
+  opacity: 0.6;
+  z-index: -1;
+}
+
+/* smaller phones */
+@media (max-width: 420px) {
+  .ctrl {
+    width: 54px;
+    height: 48px;
+    font-size: 18px;
+  }
+}
 button,
 .door {
   cursor: url("/heartasset.png"), pointer;

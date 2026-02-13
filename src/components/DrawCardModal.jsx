@@ -266,7 +266,7 @@ export default function DrawCardModal({ onClose }) {
 
   return (
     <div className="modalOverlay" role="dialog" aria-modal="true">
-      <div className="modal modal--big">
+      <div className="modal modal--big modal--scrapbook">
         <div className="modalTop">
           <div className="modalTitle">Draw your Valentine card ✍️</div>
           <button className="modalClose" onClick={onClose}>

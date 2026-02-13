@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import "../styles/intro.css";
 import { MusicContext } from "../App";
+import HamburgerMenu from "../components/HamburgerMenu";
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
@@ -85,6 +86,20 @@ export default function Intro() {
 
   const safeTop = 16; // percent - prevents bubble from going too high on mobile
   const bubbleTop = Math.max(safeTop, duckY - 12);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setAboutOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // load animation trigger
   useEffect(() => {
@@ -312,6 +327,8 @@ export default function Intro() {
             <div className="doorHearts" />
           </div>
         )}
+        <HamburgerMenu />
+
         {/* Fancy music button */}
         <button
           className="musicToggle musicToggle--fancy"
@@ -323,8 +340,9 @@ export default function Intro() {
 
         <div className="titleWrap" aria-hidden="true">
           <h1 className="introTitle">
-            A little delivery for you <span className="titleEmoji">💌</span>
+            Special Delivery <span className="titleEmoji">💌</span>
           </h1>
+          <div className="titleSub">A Little Surprise Awaits</div>
         </div>
 
         {/* Top decoration */}
