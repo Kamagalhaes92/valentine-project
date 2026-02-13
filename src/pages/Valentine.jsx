@@ -1,4 +1,4 @@
-import { useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useRef, useState, useContext } from "react";
 import "../styles/valentine.css";
 import { MusicContext } from "../App";
 import DrawCardModal from "../components/DrawCardModal";
@@ -6,32 +6,51 @@ import HamburgerMenu from "../components/HamburgerMenu";
 
 export default function Valentine() {
   const audioRef = useContext(MusicContext);
+
   const [fallingHearts, setFallingHearts] = useState([]);
+  const [yes, setYes] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
+
+  // ✅ MOBILE: only 2 ducks
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia("(max-width: 640px)").matches,
+  );
+
+  const cuteYesMessages = [
+    "Life is better with you in it — today, tomorrow, and every day after 🌷 🦆✨",
+    "You make my world softer, brighter, and so much happier 💗✨ I’m so lucky to have you.",
+    "However love looks for us, I’m grateful we share it 💞 You mean more than you know",
+  ];
+
+  const [yesMessage, setYesMessage] = useState("");
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onChange = () => setIsMobile(mq.matches);
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
   const playSfx = (src, volume = 0.9) => {
     const s = new Audio(src);
     s.volume = volume;
     s.play().catch(() => {});
   };
 
-  const [yes, setYes] = useState(false);
-  const [showCanvas, setShowCanvas] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
-
   const spawnHearts = () => {
     const batch = Array.from({ length: 18 }).map(() => ({
       id: crypto.randomUUID(),
-      left: Math.random() * 100, // vw
-      delay: Math.random() * 0.6, // seconds
-      size: 18 + Math.random() * 22, // px
-      dur: 2.8 + Math.random() * 1.6, // seconds
+      left: Math.random() * 100,
+      delay: Math.random() * 0.6,
+      size: 18 + Math.random() * 22,
+      dur: 2.8 + Math.random() * 1.6,
     }));
-
     setFallingHearts(batch);
-
-    // clear after animation ends
     setTimeout(() => setFallingHearts([]), 5200);
   };
 
+  // Ducks
   const duckImages = useMemo(
     () => [
       "/duck1.png",
@@ -46,15 +65,38 @@ export default function Valentine() {
 
   const duckSpots = useMemo(
     () => [
-      { left: 8, top: 20, size: 200, delay: 0.2 },
-      { left: 78, top: 16, size: 180, delay: 0.9 },
-      { left: 12, top: 68, size: 250, delay: 0.5 },
-      { left: 70, top: 72, size: 185, delay: 1.4 },
-      { left: 40, top: 10, size: 155, delay: 1.1 },
-      { left: 45, top: 78, size: 200, delay: 1.8 },
+      // Duck 1 (mobile: top center)
+      {
+        left: 50,
+        top: 18,
+        size: 220,
+        delay: 0.2,
+        mLeft: 50,
+        mTop: 14,
+        mSize: 180,
+      },
+
+      // Duck 2 (mobile: bottom center)
+      {
+        left: 86,
+        top: 24,
+        size: 200,
+        delay: 0.9,
+        mLeft: 50,
+        mTop: 84,
+        mSize: 200,
+      },
+
+      // remaining ducks (desktop only)
+      { left: 14, top: 74, size: 260, delay: 0.5 },
+      { left: 80, top: 78, size: 205, delay: 1.4 },
+      { left: 50, top: 12, size: 170, delay: 1.1 },
+      { left: 52, top: 84, size: 210, delay: 1.8 },
     ],
     [],
   );
+
+  const visibleDuckCount = isMobile ? 2 : duckImages.length;
 
   const toggleMusic = () => {
     const a = audioRef?.current;
@@ -63,47 +105,68 @@ export default function Valentine() {
     else a.pause();
   };
 
-  const spots = useMemo(
-    () => [
-      { x: 15, y: 30 },
-      { x: 85, y: 30 },
-      { x: 15, y: 75 },
-      { x: 85, y: 75 },
-      { x: 50, y: 25 },
-      { x: 50, y: 80 },
-      { x: 25, y: 55 },
-      { x: 75, y: 55 },
-      { x: 10, y: 55 },
-      { x: 90, y: 55 },
-    ],
-    [],
-  );
-
-  const [noPos, setNoPos] = useState({ x: 62, y: 62 });
+  // ✅ Keep NO inside the panel
+  const panelRef = useRef(null);
+  const noBtnRef = useRef(null);
+  const [noStyle, setNoStyle] = useState({ left: "68%", top: "62%" });
+  const [isRunning, setIsRunning] = useState(false);
 
   const moveNo = () => {
     setIsRunning(true);
 
-    const newSpot = spots[Math.floor(Math.random() * spots.length)];
+    const panel = panelRef.current;
+    const btn = noBtnRef.current;
+    if (!panel || !btn) return;
 
-    setNoPos(newSpot);
+    const pad = 10; // keep away from edges a bit
+    const pw = panel.clientWidth;
+    const ph = panel.clientHeight;
+    const bw = btn.offsetWidth;
+    const bh = btn.offsetHeight;
+
+    const maxX = Math.max(pad, pw - bw - pad);
+    const maxY = Math.max(pad, ph - bh - pad);
+
+    const x = pad + Math.random() * (maxX - pad);
+    const y = pad + Math.random() * (maxY - pad);
+
+    // store as px for consistent bounds
+    setNoStyle({ left: `${x}px`, top: `${y}px` });
   };
 
   return (
     <div className="valentinePage">
       <HamburgerMenu />
+
       <img
         className="cornerSix cornerSix--left"
-        src="/six.png"
+        src="/6.png"
         alt=""
         aria-hidden="true"
       />
       <img
         className="cornerSix cornerSix--right"
-        src="/six.png"
+        src="/6.png"
         alt=""
         aria-hidden="true"
       />
+
+      {/* ✨ new floating sprinkles layer */}
+      <div className="sprinkleLayer" aria-hidden="true">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span
+            key={i}
+            className="sprinkle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${6 + Math.random() * 6}s`,
+              transform: `translate3d(0,0,0) scale(${0.7 + Math.random() * 0.9})`,
+            }}
+          />
+        ))}
+      </div>
 
       <div className="rightControls">
         <button
@@ -119,11 +182,12 @@ export default function Valentine() {
           onClick={() => setShowCanvas(true)}
           aria-label="Create card"
         >
-          <span className="heartGlow" aria-hidden="true" />
-          <span className="heartSparkles" aria-hidden="true" />
-          <span className="heartText">Create Card</span>
+          <span className="ctaHalo" aria-hidden="true" />
+          <span className="ctaSparkles" aria-hidden="true" />
+          <span className="ctaLabel">Create Card</span>
         </button>
       </div>
+
       <div className="fallingHearts" aria-hidden="true">
         {fallingHearts.map((h) => (
           <div
@@ -141,62 +205,68 @@ export default function Valentine() {
       </div>
 
       {/* Ducks scattered */}
-      <div className="duckLayer" aria-hidden="true">
-        {duckImages.map((src, i) => (
+      {duckImages.slice(0, visibleDuckCount).map((src, i) => {
+        const spot = duckSpots[i];
+        const left = isMobile && spot.mLeft != null ? spot.mLeft : spot.left;
+        const top = isMobile && spot.mTop != null ? spot.mTop : spot.top;
+        const size = isMobile && spot.mSize != null ? spot.mSize : spot.size;
+
+        return (
           <img
             key={src}
             src={src}
             className={`sceneDuck ${yes ? "sceneDuck--party" : ""}`}
             style={{
-              left: `${duckSpots[i].left}%`,
-              top: `${duckSpots[i].top}%`,
-              width: `${duckSpots[i].size}px`,
-              animationDelay: `${duckSpots[i].delay}s`,
+              left: `${left}%`,
+              top: `${top}%`,
+              width: `${size}px`,
+              animationDelay: `${spot.delay}s`,
             }}
             alt=""
           />
-        ))}
-      </div>
-
-      {/* YES screen */}
+        );
+      })}
 
       {yes && (
         <div className="yesScreen">
-          <div className="yesMessage">YAY!! 💘 I knew you’d say yes 🦆✨</div>
-
+          <div className="yesMessage">{yesMessage}</div>
           <img className="yesGif" src="/giphy.gif" alt="" aria-hidden="true" />
-
           <button className="backBtn" onClick={() => setYes(false)}>
             ← Back
           </button>
         </div>
       )}
 
-      {/* Question Frame (ONLY show when NOT yes) */}
       {!yes && (
         <div className="questionFrame">
-          <div className="questionPanel">
-            <div className="questionTitle">Will you be my valentine?</div>
+          {/* ✅ Modern inner card + relative positioning */}
+          <div className="questionCard" ref={panelRef}>
+            <h1 className="questionTitle">Will you be my valentine?</h1>
 
             <div className="buttonRow">
               <button
                 className="heartBtn heartBtn--yes"
                 onClick={() => {
+                  const random =
+                    cuteYesMessages[
+                      Math.floor(Math.random() * cuteYesMessages.length)
+                    ];
+
+                  setYesMessage(random);
                   setYes(true);
+
                   playSfx("/clap.mp3", 0.9);
                   spawnHearts();
                 }}
               >
                 Yes
               </button>
+
               <button
-                className={`heartBtn ${isRunning ? "noBtn--free" : ""}`}
-                style={
-                  isRunning ? { left: `${noPos.x}vw`, top: `${noPos.y}vh` } : {}
-                }
-                onMouseEnter={moveNo}
-                onMouseDown={moveNo}
-                onClick={moveNo}
+                ref={noBtnRef}
+                className={`heartBtn heartBtn--no ${isRunning ? "isRunning" : ""}`}
+                style={isRunning ? noStyle : undefined}
+                onClick={moveNo} // ✅ only click triggers running
                 type="button"
               >
                 No

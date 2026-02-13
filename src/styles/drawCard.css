@@ -1,231 +1,384 @@
+/* =========================
+   DRAW CARD MODAL — MODERN + CUTE
+========================= */
+
+:root {
+  --bg: #8ad2db; /* your teal */
+  --ink: rgba(22, 20, 28, 0.92);
+
+  --glass: rgba(255, 255, 255, 0.22);
+  --glass-strong: rgba(255, 255, 255, 0.34);
+  --stroke: rgba(255, 255, 255, 0.45);
+
+  --pink: #ff4f86;
+  --pink-soft: rgba(255, 79, 134, 0.18);
+  --blue: #2aa8c2;
+
+  --radius: 22px;
+  --shadow: 0 28px 80px rgba(0, 0, 0, 0.25);
+  --inner: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* =========================
+   OVERLAY
+========================= */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  z-index: 200;
   display: grid;
   place-items: center;
-  z-index: 200;
+  padding: 14px;
+
+  background: radial-gradient(
+    circle at 50% 20%,
+    rgba(255, 255, 255, 0.12),
+    rgba(0, 0, 0, 0.35)
+  );
 }
 
+/* =========================
+   MODAL SHELL
+========================= */
+.modal {
+  width: min(980px, 96vw);
+  height: min(760px, 92vh);
+  border-radius: var(--radius);
+  overflow: hidden;
+
+  color: var(--ink);
+  background: radial-gradient(
+    circle at 30% 10%,
+    rgba(255, 255, 255, 0.32),
+    rgba(255, 255, 255, 0.12)
+  );
+
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow: var(--shadow), var(--inner);
+
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* subtle “cute glow” edge */
+.modal::before {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 20% 10%,
+    rgba(255, 79, 134, 0.22),
+    transparent 45%
+  );
+  filter: blur(18px);
+  opacity: 0.9;
+}
+
+/* scrapbook entrance but more modern */
 .modal--scrapbook {
-  transform-origin: 20% 10%;
-  animation: scrapbookIn 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  transform-origin: 22% 10%;
+  animation: modalIn 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 
-@keyframes scrapbookIn {
+@keyframes modalIn {
   0% {
     opacity: 0;
-    transform: translateY(10px) rotate(-2deg) scale(0.92);
-    filter: blur(6px);
+    transform: translateY(10px) scale(0.94);
+    filter: blur(10px);
   }
-  60% {
+  70% {
     opacity: 1;
-    transform: translateY(0) rotate(0.6deg) scale(1.02);
+    transform: translateY(0) scale(1.01);
     filter: blur(0px);
   }
   100% {
-    transform: translateY(0) rotate(0deg) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-.modal {
-  .modal {
-    width: min(980px, 96vw);
-    height: min(760px, 92vh);
-    background: #8ad2db;
-    border-radius: 18px;
-    overflow: hidden;
-
-    display: flex;
-    flex-direction: column;
-  }
-}
-
-.modalMiddle {
-  flex: 1;
-  overflow: auto;
-  padding-bottom: 10px;
-}
-
+/* =========================
+   TOP BAR
+========================= */
 .modalTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 14px 14px;
+  position: relative;
+  z-index: 2;
 }
 
 .modalTitle {
-  font-weight: 800;
-}
-
-.modalClose {
-  border: none;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 12px;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-.drawCanvas {
-  width: 100%;
-  height: 100%;
-  touch-action: none;
-  background: #ffe6f0; /* soft pink */
-}
-
-.modalActions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 12px 14px;
-}
-
-.modalActions button {
-  border: none;
-  border-radius: 14px;
-  padding: 10px 12px;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.brush {
+  font-weight: 950;
+  letter-spacing: 0.3px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-right: auto;
 }
 
-.modal--big {
-  width: min(980px, 96vw);
-  height: min(760px, 90vh);
+/* little badge */
+.modalTitle::after {
+  content: "✨";
+  font-size: 14px;
+  opacity: 0.9;
 }
 
+.modalClose {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.modalClose:active {
+  transform: scale(0.96);
+}
+
+/* =========================
+   SCROLLABLE CONTENT
+========================= */
+.modalMiddle {
+  flex: 1;
+  overflow: auto;
+  padding: 0 14px 12px;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================
+   META FORM
+========================= */
 .metaRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  align-items: flex-end;
-  padding: 0 14px 10px;
-  flex-wrap: wrap;
+  padding: 0 0 12px;
 }
 
 .metaLabel {
   display: grid;
   gap: 6px;
-  font-weight: 700;
-}
-
-.metaInput {
-  width: min(360px, 70vw);
-  border: 1px solid #ffe6f0;
-  border-radius: 14px;
-  padding: 10px 12px;
-  background-color: aliceblue;
-  color: grey;
-}
-
-.emojiRow {
-  padding: 0 14px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.emojiTitle {
-  font-weight: 800;
-}
-
-.emojiBtns {
-  display: flex;
-  gap: 8px;
-}
-
-.emojiBtn {
-  border: none;
-  cursor: pointer;
-  border-radius: 14px;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  font-size: 20px;
-}
-
-.drawCanvas {
-  width: 100%;
-  height: 44vh; /* bigger */
-  border-radius: 16px;
-  touch-action: none;
-}
-
-.drawCanvas--pink {
-  background: #ffe6f0;
-}
-
-.canvasWrap {
-  flex: 1;
-  min-height: 300px; /* or whatever */
-}
-
-.previewRow {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  padding: 12px 0;
-  z-index: 5;
-}
-
-.previewRow button {
-  border: none;
-  border-radius: 14px;
-  padding: 10px 12px;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.previewBox {
-  padding: 0 14px 14px;
-}
-
-.previewTitle {
   font-weight: 900;
-  margin-bottom: 8px;
+  font-size: 13px;
+  color: rgba(22, 20, 28, 0.85);
 }
 
-.previewImg {
-  width: min(420px, 90vw);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+.metaLabel--wide {
+  grid-column: 1 / -1;
 }
-.emojiBtn--active {
-  outline: 3px solid rgba(123, 63, 228, 0.35);
-  transform: scale(1.08);
+
+/* modern pill input */
+.metaInput {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.28);
+  color: rgba(22, 20, 28, 0.9);
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.metaInput::placeholder {
+  color: rgba(22, 20, 28, 0.45);
+}
+
+.metaInput:focus {
+  border-color: rgba(255, 79, 134, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(255, 79, 134, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* =========================
+   BRUSH / COLOR (keeps your class)
+========================= */
+.brush {
+  display: grid;
+  gap: 6px;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(22, 20, 28, 0.85);
+}
+
+.brush input[type="range"] {
+  width: 100%;
+  accent-color: var(--pink);
+}
+
+.brush input[type="color"] {
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 14px;
+}
+
+/* =========================
+   EMOJI ROW
+========================= */
+.emojiRow {
+  display: grid;
+  gap: 10px;
+  padding: 6px 0 12px;
 }
 
 .stampHint {
-  padding: 0 14px 10px;
-  font-weight: 800;
+  font-weight: 950;
+  color: rgba(22, 20, 28, 0.9);
 }
 
 .stampHint span {
   font-size: 22px;
 }
+
+.emojiTitle {
+  font-weight: 950;
+}
+
+.emojiBtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* emoji chips */
+.emojiBtn {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.emojiBtn:active {
+  transform: scale(0.96);
+}
+
+.emojiBtn--active {
+  border-color: rgba(255, 79, 134, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(255, 79, 134, 0.16),
+    0 10px 26px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================
+   CANVAS AREA
+========================= */
+.canvasWrap {
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.drawCanvas {
+  width: 100%;
+  height: clamp(250px, 44vh, 420px);
+  border-radius: 16px;
+  display: block;
+  touch-action: none;
+
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 230, 240, 0.95)
+  );
+}
+
+/* =========================
+   BOTTOM BUTTON BAR
+========================= */
+.previewRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
+  position: relative;
+  z-index: 2;
+
+  background: rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* modern buttons */
+.previewRow button {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 16px;
+  padding: 12px 10px;
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.22);
+  color: rgba(22, 20, 28, 0.92);
+
+  font-weight: 950;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.previewRow button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* make Share pop */
+.previewRow button:last-child {
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 182, 207, 0.95)
+  );
+  border-color: rgba(255, 79, 134, 0.45);
+  box-shadow:
+    0 18px 40px rgba(255, 79, 134, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* =========================
+   PREVIEW OVERLAY
+========================= */
 .previewOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  z-index: 9999;
   display: grid;
   place-items: center;
-  z-index: 9999;
   padding: 18px;
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .previewModal {
   width: min(720px, 95vw);
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.94);
   border-radius: 22px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.25);
   padding: 14px;
 }
 
@@ -237,21 +390,21 @@
 }
 
 .previewHeading {
-  font-weight: 900;
+  font-weight: 950;
   letter-spacing: 1px;
-  color: #ff4f86;
+  color: var(--pink);
 }
 
 .previewClose {
-  border: 2px solid #ff4f86;
-  background: #8ad2db;
-  color: #7a2b44;
-  border-radius: 18px;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
   cursor: pointer;
+
+  border: 1px solid rgba(255, 79, 134, 0.45);
+  background: rgba(138, 210, 219, 0.85);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
   font-size: 18px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .previewBigImg {
@@ -266,13 +419,67 @@
   justify-content: center;
   gap: 12px;
   padding: 12px 6px 4px;
+  flex-wrap: wrap;
 }
 
 .previewActions button {
-  border: none;
+  border: 1px solid rgba(255, 79, 134, 0.35);
   cursor: pointer;
   border-radius: 16px;
   padding: 12px 16px;
-  font-weight: 800;
-  background: #ffb6cf;
+  font-weight: 950;
+  background: rgba(255, 182, 207, 0.92);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 520px) {
+  .modalOverlay {
+    padding: 10px;
+  }
+
+  .modalTop {
+    padding: 12px;
+  }
+
+  .modalMiddle {
+    padding: 0 12px 10px;
+  }
+
+  .metaRow {
+    grid-template-columns: 1fr;
+  }
+
+  .metaLabel--wide {
+    grid-column: auto;
+  }
+
+  .drawCanvas {
+    height: clamp(220px, 36vh, 320px);
+  }
+
+  .previewRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .previewRow button {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+}
+
+/* Landscape phones — keep buttons visible */
+@media (max-height: 520px) and (orientation: landscape) {
+  .modal {
+    height: 94vh;
+  }
+
+  .drawCanvas {
+    height: clamp(180px, 30vh, 240px);
+  }
+
+  .previewRow button {
+    padding: 10px 8px;
+  }
 }

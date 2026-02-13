@@ -1,34 +1,82 @@
+/* =========================
+   PAGE
+========================= */
 .valentinePage {
   min-height: 100vh;
+  min-height: 100svh;
   width: 100vw;
+
   position: relative;
   overflow: hidden;
+
   background: url("/background.png") center / cover no-repeat;
+
+  /* ✨ THIS is what centers the card */
+  display: grid;
+  place-items: center;
 }
 
-/* Bottom corner decoration */
+/* vignette + grain overlay */
+.valentinePage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      rgba(255, 255, 255, 0.18),
+      rgba(0, 0, 0, 0.22) 70%
+    ),
+    url("/grain.png");
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* =========================
+   CORNER 6.PNG (extreme bottom corners)
+========================= */
 .cornerSix {
   position: absolute;
-  bottom: 0;
-  width: min(260px, 42vw);
+  bottom: -18px;
+  width: min(260px, 46vw);
   height: auto;
   pointer-events: none;
-  z-index: 5;
+  z-index: 80;
+  opacity: 0.95;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.16));
 }
+
 .cornerSix--left {
-  left: 0;
+  left: -26px;
 }
 .cornerSix--right {
-  right: 0;
+  right: -26px;
   transform: scaleX(-1);
 }
 
-/* Top-right controls */
+@media (max-width: 640px) {
+  .cornerSix {
+    width: min(160px, 52vw);
+    bottom: -14px;
+  }
+  .cornerSix--left {
+    left: -18px;
+  }
+  .cornerSix--right {
+    right: -18px;
+  }
+}
+
+/* =========================
+   TOP RIGHT CONTROLS
+========================= */
 .rightControls {
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 100;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -41,15 +89,70 @@
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.88);
   font-size: 16px;
-  font-weight: 700;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  font-weight: 800;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+  transition:
+    transform 140ms ease,
+    filter 140ms ease;
+}
+.iconBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+}
+.iconBtn:active {
+  transform: translateY(1px);
 }
 
-/* Ducks behind everything */
+/* =========================
+   SPRINKLES / STARS
+========================= */
+.sprinkleLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.sprinkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  opacity: 0.65;
+  animation: sprinkleFloat linear infinite;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 35%, transparent 45%),
+    conic-gradient(
+      from 0deg,
+      rgba(255, 214, 240, 0.85),
+      rgba(175, 235, 255, 0.7),
+      rgba(255, 244, 186, 0.75),
+      rgba(255, 214, 240, 0.85)
+    );
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes sprinkleFloat {
+  0% {
+    transform: translate3d(0, 24px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(0, -140px, 0) rotate(220deg);
+    opacity: 0;
+  }
+}
+
+/* =========================
+   DUCKS
+========================= */
 .duckLayer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -58,6 +161,7 @@
   transform: translate(-50%, -50%);
   opacity: 0.95;
   will-change: transform;
+  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.22));
 }
 
 .sceneDuck--party {
@@ -82,93 +186,132 @@
   }
 }
 
-/* Frame */
+/* =========================
+   QUESTION FRAME + CARD
+   (centers title + buttons reliably)
+========================= */
 .questionFrame {
   position: relative;
-  z-index: 10;
-
-  width: min(760px, 94vw);
+  z-index: 20;
+  width: min(760px, 92vw);
   margin: 0 auto;
 
-  /* centers vertically without hard-coded top */
-  margin-top: clamp(160px, 22vh, 260px);
-
-  background: url("/frame.png") center / contain no-repeat;
-  aspect-ratio: 4 / 2.2;
-
   display: grid;
   place-items: center;
 }
 
-.questionPanel {
-  width: 78%;
-  text-align: center;
-}
+/* glass 3D panel */
+.questionCard {
+  width: 100%;
+  max-width: 760px;
 
-.questionTitle {
-  font-size: clamp(30px, 6vw, 40px);
-
-  color: #f16c68;
-  -webkit-text-stroke: 1px #5ec6de;
-  font-family: "Gorditas", serif;
-}
-
-/* Heart button look */
-.heartBtn {
-  width: 140px;
-  height: 120px;
-  border: none;
-  cursor: pointer;
-  background: url("/heartBtn.png") center / contain no-repeat;
-  font-size: 28px;
-  font-weight: 900;
-  color: #ff4f86;
-  display: grid;
-  place-items: center;
-}
-
-/* YES button stays inside the frame */
-.heartBtn--yes {
-  margin-top: 18px;
-}
-
-/* NO button becomes “free roaming” */
-.noBtn {
-  position: fixed; /* IMPORTANT: not relative to frame */
-  left: 60vw;
-  top: 60vh;
-  transform: translate(-50%, -50%);
-  z-index: 90; /* above frame */
-  transition:
-    left 160ms ease,
-    top 160ms ease,
-    transform 160ms ease;
-}
-
-.noBtn:hover {
-  transform: translate(-50%, -50%) scale(1.1) rotate(-5deg);
-}
-
-/* Back button */
-.backBtn {
-  border: none;
-  padding: 10px 20px;
+  /* 👇 makes it slightly taller */
+  padding: clamp(30px, 5vw, 54px) clamp(24px, 4vw, 48px);
+  min-height: clamp(260px, 34vh, 420px);
   border-radius: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  background: #5ec6de;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.buttonRow {
-  margin-top: 20px;
+  text-align: center;
+  position: relative;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 40px; /* distance between Yes and No */
+  flex-direction: column;
+  justify-content: center; /* vertical center inside card */
+  align-items: center; /* horizontal center */
+
+  /* 💌 soft romantic paper */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.92),
+    rgba(255, 240, 246, 0.85)
+  );
+
+  border: 1px solid rgba(255, 255, 255, 0.9);
+
+  /* 🧱 stronger 3D depth */
+  box-shadow:
+    0 50px 120px rgba(0, 0, 0, 0.25),
+    0 20px 40px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  /* 👇 LESS tilt (was 5deg before) */
+  transform: perspective(1200px) rotateX(2deg);
+
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease;
+}
+/* inner border */
+.questionCard::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(241, 108, 104, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(94, 198, 222, 0.18);
+  pointer-events: none;
 }
 
-/* Heart button base */
+/* shine */
+.questionCard::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 80%;
+  height: 28px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 240, 246, 0.4)
+  );
+
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0 0 40px 40px;
+
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.questionCard:hover {
+  transform: perspective(1200px) rotateX(0deg) translateY(-4px);
+  box-shadow:
+    0 60px 140px rgba(0, 0, 0, 0.28),
+    0 30px 60px rgba(0, 0, 0, 0.22);
+}
+
+/* Title */
+.questionTitle {
+  position: relative;
+  z-index: 2;
+  margin: 0 auto;
+  max-width: 18ch; /* keeps it nicely centered on small screens */
+  font-size: clamp(20px, 5.6vw, 40px);
+  line-height: 1.1;
+  color: #f16c68;
+  -webkit-text-stroke: 1px rgba(94, 198, 222, 0.85);
+  font-family: "Gorditas", serif;
+  text-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Buttons row */
+.buttonRow {
+  position: relative;
+  z-index: 2;
+  margin-top: 18px;
+
+  display: flex;
+  justify-content: center; /* ✅ centers both */
+  align-items: center;
+
+  gap: clamp(14px, 5vw, 44px);
+  min-height: 140px; /* room for No to move */
+}
+
+/* Heart buttons */
 .heartBtn {
   width: 140px;
   height: 120px;
@@ -180,42 +323,70 @@
   color: #ff4f86;
   display: grid;
   place-items: center;
+  transition:
+    transform 140ms ease,
+    filter 140ms ease;
+}
+.heartBtn:hover {
+  transform: scale(1.05) rotate(-2deg);
+  filter: brightness(1.02);
+}
+.heartBtn:active {
+  transform: scale(0.98);
 }
 
-/* When No starts running */
-.noBtn--free {
-  position: fixed;
-  z-index: 100;
+/* YES stays normal */
+.heartBtn--yes {
+  position: relative;
+}
+
+/* NO:
+   Default = normal centered layout like YES
+   Running = absolute with left/top set by JS (px)
+*/
+.heartBtn--no {
+  position: relative;
+}
+
+.heartBtn--no.isRunning {
+  position: absolute;
+  left: 60%;
+  top: 50%;
   transform: translate(-50%, -50%);
   transition:
-    left 160ms ease,
-    top 160ms ease,
-    transform 160ms ease;
+    left 180ms ease,
+    top 180ms ease,
+    transform 180ms ease;
+}
+.heartBtn--no.isRunning:hover {
+  transform: translate(-50%, -50%) scale(1.08) rotate(-6deg);
 }
 
-.yesMessage {
-  font-size: 26px;
-  font-weight: 800;
-  color: #ff4f86;
-  background-color: #f0f1f1;
-  border: 2px solid #5ec6de;
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-family: "Annie Use Your Telescope", cursive;
-}
-
+/* =========================
+   YES SCREEN
+========================= */
 .yesScreen {
   position: absolute;
   inset: 0;
-  z-index: 80;
-
+  z-index: 120;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 18px;
-
   text-align: center;
+}
+
+.yesMessage {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ff4f86;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(94, 198, 222, 0.75);
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-family: "Annie Use Your Telescope", cursive;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
 }
 
 .yesGif {
@@ -224,11 +395,24 @@
   pointer-events: none;
 }
 
+.backBtn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #5ec6de;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
+}
+
+/* =========================
+   FALLING HEARTS
+========================= */
 .fallingHearts {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 70; /* above background and ducks, below your top controls if needed */
+  z-index: 90;
   overflow: hidden;
 }
 
@@ -257,31 +441,26 @@
 }
 
 /* =========================
-   CUTE MODERN HEART CTA
+   CTA BUTTON
 ========================= */
-
 .ctaHeart {
   position: relative;
   border: none;
   cursor: pointer;
-
   width: 170px;
   height: 56px;
   border-radius: 999px;
-
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 
-  /* modern candy-glass */
   background: linear-gradient(
     135deg,
     rgba(255, 170, 210, 0.92),
     rgba(120, 210, 255, 0.72)
   );
   border: 1px solid rgba(255, 255, 255, 0.6);
-
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 
@@ -294,63 +473,15 @@
     transform 140ms ease,
     filter 140ms ease,
     box-shadow 140ms ease;
-
-  /* tiny wiggle every few seconds */
-  animation: ctaWiggle 6s ease-in-out infinite;
 }
-
-@keyframes ctaWiggle {
-  0%,
-  86%,
-  100% {
-    transform: translateY(0);
-  }
-  89% {
-    transform: translateY(-2px) rotate(-1deg);
-  }
-  92% {
-    transform: translateY(-2px) rotate(1deg);
-  }
-  95% {
-    transform: translateY(-1px) rotate(0deg);
-  }
-}
-
 .ctaHeart:hover {
   filter: brightness(1.03);
   transform: translateY(-2px);
-  box-shadow:
-    0 26px 70px rgba(255, 120, 180, 0.28),
-    0 16px 34px rgba(0, 0, 0, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
-
 .ctaHeart:active {
   transform: translateY(2px) scale(0.99);
-  filter: brightness(1.02);
 }
 
-/* Heart icon bubble */
-.ctaHeart::before {
-  content: "💗";
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-
-  display: grid;
-  place-items: center;
-
-  background: rgba(255, 255, 255, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 12px 25px rgba(0, 0, 0, 0.12);
-
-  transform: translateY(-0.5px);
-}
-
-/* Label */
 .ctaLabel {
   font-family: "Gorditas", system-ui, sans-serif;
   font-size: 16px;
@@ -360,7 +491,6 @@
   text-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
 }
 
-/* soft halo glow behind */
 .ctaHalo {
   position: absolute;
   inset: -14px;
@@ -376,7 +506,6 @@
   z-index: -1;
   animation: ctaPulse 2.4s ease-in-out infinite;
 }
-
 @keyframes ctaPulse {
   0%,
   100% {
@@ -389,17 +518,14 @@
   }
 }
 
-/* tiny sparkles around */
 .ctaSparkles {
   position: absolute;
   inset: -28px;
   pointer-events: none;
-
   background-image:
     radial-gradient(circle, rgba(255, 255, 255, 0.95) 2px, transparent 3px),
     radial-gradient(circle, rgba(255, 255, 255, 0.75) 1px, transparent 3px),
     radial-gradient(circle, rgba(255, 255, 255, 0.55) 2px, transparent 4px);
-
   background-size:
     90px 90px,
     140px 140px,
@@ -408,19 +534,34 @@
     0 0,
     30px 60px,
     80px 20px;
-
   opacity: 0.55;
   animation: sparkleDrift 2.8s linear infinite;
 }
-
 @keyframes sparkleDrift {
   to {
     transform: translateY(16px);
   }
 }
 
-/* Responsive */
+/* =========================
+   RESPONSIVE
+========================= */
 @media (max-width: 768px) {
+  .questionFrame {
+    width: min(560px, 94vw);
+  }
+  .heartBtn {
+    width: 118px;
+    height: 102px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .rightControls {
+    top: 12px;
+    right: 12px;
+  }
   .ctaHeart {
     width: 152px;
     height: 52px;
@@ -428,25 +569,7 @@
   .ctaLabel {
     font-size: 15px;
   }
-}
-
-@media (max-width: 768px) {
-  .questionFrame {
-    width: min(520px, 94vw);
-    margin-top: clamp(150px, 18vh, 200px);
-  }
-
   .questionTitle {
-    font-size: clamp(22px, 6.2vw, 32px);
-  }
-
-  .buttonRow {
-    gap: 18px;
-  }
-
-  .heartBtn {
-    width: 118px;
-    height: 102px;
-    font-size: 22px;
+    max-width: 16ch;
   }
 }
