@@ -197,13 +197,6 @@ export default function Intro() {
     return () => clearTimeout(startTimer);
   }, [bubbleText, speak, dialogueIndex]);
 
-  useEffect(() => {
-    if (!window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance(" ");
-    u.volume = 0;
-    window.speechSynthesis.speak(u);
-  }, []);
-
   // music toggle
   const toggleMusic = useCallback(() => {
     const a = audioRef?.current;
@@ -278,7 +271,7 @@ export default function Intro() {
     // wait for the "inside the door" scene
     setTimeout(() => {
       navigate("/valentine");
-    }, 2000);
+    }, 1800);
   }, [duckNearDoor, transitioning, navigate, playSfx]);
 
   // sparkle particles near door when duck is close

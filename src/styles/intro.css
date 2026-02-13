@@ -12,9 +12,8 @@
    LAYOUT WRAPPERS
 ========================= */
 .intro {
-  min-height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
-  background: #fff;
   overflow: hidden;
 }
 
@@ -142,10 +141,17 @@
 .scene {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100svh; /* iOS safe viewport */
+  height: 100dvh; /* dynamic viewport */
+  height: 100vh; /* fallback */
+  height: 100dvh;
   overflow: hidden;
-  background: url("/background.png") center / cover no-repeat;
-  cursor: url("/heartasset.png"), auto;
+
+  background-color: #fff; /* prevents black flash if image fails */
+  background-image: url("/background.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 /* blur overlay that fades out after load */
@@ -858,5 +864,54 @@ button,
   .ctrl {
     width: 64px;
     height: 56px;
+  }
+}
+
+@media (max-width: 980px) and (orientation: landscape) {
+  .titleWrap {
+    top: 10px;
+    padding: 8px 12px;
+  }
+
+  .introTitle {
+    font-size: clamp(22px, 4vw, 36px);
+  }
+
+  .decorTop {
+    top: -9rem;
+    width: min(420px, 70vw);
+    opacity: 0.85;
+  }
+
+  .duck {
+    width: 8rem;
+    height: 8rem;
+  }
+
+  .bubble {
+    font-size: 14px;
+    max-width: min(520px, 78vw);
+    padding: 10px 12px;
+  }
+
+  .door {
+    width: min(32vw, 420px);
+    height: min(56vh, 420px);
+    bottom: 10%;
+  }
+
+  .balloon {
+    width: 22vw;
+    bottom: 4px;
+    opacity: 0.9;
+  }
+
+  .controls {
+    bottom: calc(env(safe-area-inset-bottom) + 8px);
+  }
+
+  .ctrl {
+    width: 56px;
+    height: 48px;
   }
 }
