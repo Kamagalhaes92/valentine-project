@@ -197,6 +197,13 @@ export default function Intro() {
     return () => clearTimeout(startTimer);
   }, [bubbleText, speak, dialogueIndex]);
 
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+  }, []);
+
   // music toggle
   const toggleMusic = useCallback(() => {
     const a = audioRef?.current;
