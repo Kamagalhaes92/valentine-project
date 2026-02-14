@@ -1,527 +1,366 @@
 /* =========================
-   DRAW CARD MODAL — MODERN + CUTE
+   DRAW CARD MODAL — CLEAN + RESPONSIVE
 ========================= */
 
-:root {
-  --bg: #8ad2db; /* your teal */
-  --ink: rgba(22, 20, 28, 0.92);
-
-  --glass: rgba(255, 255, 255, 0.22);
-  --glass-strong: rgba(255, 255, 255, 0.34);
-  --stroke: rgba(255, 255, 255, 0.45);
-
-  --pink: #ff4f86;
-  --pink-soft: rgba(255, 79, 134, 0.18);
-  --blue: #2aa8c2;
-
-  --radius: 22px;
-  --shadow: 0 28px 80px rgba(0, 0, 0, 0.25);
-  --inner: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-/* =========================
-   OVERLAY
-========================= */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: grid;
-  place-items: center;
-  padding: 14px;
-
-  background: radial-gradient(
-    circle at 50% 20%,
-    rgba(255, 255, 255, 0.12),
-    rgba(0, 0, 0, 0.35)
-  );
-}
-
-/* =========================
-   MODAL SHELL
-========================= */
-.modal {
-  width: min(980px, 96vw);
-  height: min(760px, 92vh);
-  border-radius: var(--radius);
-  overflow: hidden;
-
-  color: var(--ink);
-  background: radial-gradient(
-    circle at 30% 10%,
-    rgba(255, 255, 255, 0.32),
-    rgba(255, 255, 255, 0.12)
-  );
-
-  border: 1px solid var(--stroke);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  box-shadow: var(--shadow), var(--inner);
-
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* subtle “cute glow” edge */
-.modal::before {
-  content: "";
-  position: absolute;
-  inset: -40px;
-  pointer-events: none;
-  background: radial-gradient(
-    circle at 20% 10%,
-    rgba(255, 79, 134, 0.22),
-    transparent 45%
-  );
-  filter: blur(18px);
-  opacity: 0.9;
-}
-
-/* scrapbook entrance but more modern */
-.modal--scrapbook {
-  transform-origin: 22% 10%;
-  animation: modalIn 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-
-@keyframes modalIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.94);
-    filter: blur(10px);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0) scale(1.01);
-    filter: blur(0px);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* =========================
-   TOP BAR
-========================= */
-.modalTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 14px 14px;
-  position: relative;
-  z-index: 2;
-}
-
-.modalTitle {
-  font-weight: 950;
-  letter-spacing: 0.3px;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* little badge */
-.modalTitle::after {
-  content: "✨";
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.modalClose {
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 14px;
-  padding: 10px 12px;
-  cursor: pointer;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease;
-}
-
-.modalClose:active {
-  transform: scale(0.96);
-}
-
-/* =========================
-   SCROLLABLE CONTENT
-========================= */
-.modalMiddle {
-  flex: 1;
-  overflow: auto;
-  padding: 0 14px 12px;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-  z-index: 2;
-}
-
-/* =========================
-   META FORM
-========================= */
-.metaRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 0 0 12px;
-}
-
-.metaLabel {
-  display: grid;
-  gap: 6px;
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(22, 20, 28, 0.85);
-}
-
-.metaLabel--wide {
-  grid-column: 1 / -1;
-}
-
-/* modern pill input */
-.metaInput {
-  width: 100%;
-  padding: 12px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.28);
-  color: rgba(22, 20, 28, 0.9);
-  outline: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-.metaInput::placeholder {
-  color: rgba(22, 20, 28, 0.45);
-}
-
-.metaInput:focus {
-  border-color: rgba(255, 79, 134, 0.45);
-  box-shadow:
-    0 0 0 4px rgba(255, 79, 134, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-/* =========================
-   BRUSH / COLOR (keeps your class)
-========================= */
-.brush {
-  display: grid;
-  gap: 6px;
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(22, 20, 28, 0.85);
-}
-
-.brush input[type="range"] {
-  width: 100%;
-  accent-color: var(--pink);
-}
-
-.brush input[type="color"] {
-  width: 100%;
-  height: 44px;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.28);
-  border-radius: 14px;
-}
-
-/* =========================
-   EMOJI ROW
-========================= */
-.emojiRow {
-  display: grid;
-  gap: 10px;
-  padding: 6px 0 12px;
-}
-
-.stampHint {
-  font-weight: 950;
-  color: rgba(22, 20, 28, 0.9);
-}
-
-.stampHint span {
-  font-size: 22px;
-}
-
-.emojiTitle {
-  font-weight: 950;
-}
-
-.emojiBtns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* emoji chips */
-.emojiBtn {
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.26);
-  border-radius: 999px;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-size: 20px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease;
-}
-
-.emojiBtn:active {
-  transform: scale(0.96);
-}
-
-.emojiBtn--active {
-  border-color: rgba(255, 79, 134, 0.55);
-  box-shadow:
-    0 0 0 4px rgba(255, 79, 134, 0.16),
-    0 10px 26px rgba(0, 0, 0, 0.1);
-}
-
-/* =========================
-   CANVAS AREA
-========================= */
-.canvasWrap {
-  border-radius: 20px;
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.drawCanvas {
-  width: 100%;
-  height: clamp(250px, 44vh, 420px);
-  border-radius: 16px;
-  display: block;
-  touch-action: none;
-
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(255, 255, 255, 0.5),
-    rgba(255, 230, 240, 0.95)
-  );
-}
-
-/* =========================
-   BOTTOM BUTTON BAR
-========================= */
-.previewRow {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  padding: 12px 14px;
-  position: relative;
-  z-index: 2;
-
-  background: rgba(255, 255, 255, 0.14);
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-/* modern buttons */
-.previewRow button {
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 16px;
-  padding: 12px 10px;
-  cursor: pointer;
-
-  background: rgba(255, 255, 255, 0.22);
-  color: rgba(22, 20, 28, 0.92);
-
-  font-weight: 950;
-  box-shadow:
-    0 14px 34px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-
-  transition:
-    transform 120ms ease,
-    filter 120ms ease,
-    box-shadow 120ms ease;
-}
-
-.previewRow button:active {
-  transform: translateY(1px) scale(0.98);
-}
-
-/* make Share pop */
-.previewRow button:last-child {
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(255, 255, 255, 0.55),
-    rgba(255, 182, 207, 0.95)
-  );
-  border-color: rgba(255, 79, 134, 0.45);
-  box-shadow:
-    0 18px 40px rgba(255, 79, 134, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-/* =========================
-   PREVIEW OVERLAY
-========================= */
-.previewOverlay {
+.dcOverlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: 14px;
   background: rgba(0, 0, 0, 0.35);
 }
 
-.previewModal {
-  width: min(720px, 95vw);
-  background: rgba(255, 255, 255, 0.94);
+/* key fix: flex column + bounded height */
+.dcModal {
+  width: min(980px, 96vw);
+  height: min(780px, 92vh);
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 26px;
+  overflow: hidden;
+
+  background: linear-gradient(180deg, #c6d7e7, #ffe3f0);
+  border: 1px solid rgba(255, 79, 134, 0.26);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.22);
+}
+
+/* Fix overlapping inputs: force border-box sizing everywhere in modal */
+.modal,
+.modal * {
+  box-sizing: border-box;
+}
+
+/* Grid children must be allowed to shrink */
+.metaRow > * {
+  min-width: 0;
+}
+
+/* row that holds To + From */
+.metaRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px; /* base spacing */
+  align-items: end;
+}
+
+.metaInput {
+  min-width: 0;
+  width: 100%;
+}
+
+/* ---------- Top ---------- */
+.dcTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.dcTitle {
+  font-weight: 950;
+  font-size: 18px;
+  color: rgba(20, 70, 82, 0.92);
+  font-family: "Gorditas", sans-serif;
+}
+
+.dcClose {
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+/* ---------- Body scroll area ---------- */
+.dcBody {
+  flex: 1; /* ✅ allows scrolling */
+  overflow: auto; /* ✅ prevents clipping */
+  -webkit-overflow-scrolling: touch;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+/* ---------- Form grid ---------- */
+.dcGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dcField {
+  display: grid;
+  gap: 6px;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(20, 70, 82, 0.9);
+}
+
+.dcFieldWide {
+  grid-column: 1 / -1;
+}
+
+.dcInput {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(94, 198, 222, 0.45);
+  background: rgba(255, 255, 255, 0.62);
+  color: rgba(20, 70, 82, 0.95);
+  font-weight: 800;
+  outline: none;
+}
+
+.dcInput:focus {
+  border-color: rgba(255, 79, 134, 0.45);
+  box-shadow: 0 0 0 4px rgba(255, 79, 134, 0.16);
+}
+
+.dcField input[type="range"] {
+  width: 100%;
+  accent-color: #ff4f86;
+}
+.dcField input[type="color"] {
+  width: 100%;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(94, 198, 222, 0.45);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+/* ---------- Tools ---------- */
+.dcTools {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dcToolsRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dcToolsTitle {
+  font-weight: 950;
+  color: rgba(20, 70, 82, 0.92);
+}
+
+.dcToolsHint {
+  font-weight: 850;
+  font-size: 13px;
+  color: rgba(20, 70, 82, 0.78);
+}
+
+.dcBig {
+  font-size: 18px;
+}
+
+.dcEmojiRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dcEmoji {
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.52);
+  border-radius: 999px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+}
+
+.dcEmoji.isActive {
+  border-color: rgba(255, 79, 134, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(255, 79, 134, 0.14),
+    0 10px 26px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------- Canvas ---------- */
+.dcCanvasWrap {
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(129, 115, 115, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dcCanvas {
+  width: 100%;
+  height: clamp(240px, 44vh, 440px); /* ✅ always visible */
+  display: block;
+  border-radius: 16px;
+  touch-action: none;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 230, 240, 0.95)
+  );
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Footer pinned buttons ---------- */
+.dcFooter {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dcBtn {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.62);
+  border-radius: 16px;
+  padding: 12px 10px;
+  cursor: pointer;
+  font-weight: 950;
+  color: rgba(20, 70, 82, 0.92);
+}
+
+.dcBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dcBtnPrimary {
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 182, 207, 0.95)
+  );
+  border-color: rgba(255, 79, 134, 0.45);
+}
+
+/* ---------- Share bar ---------- */
+.dcShareBar {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.dcShareTitle {
+  font-weight: 950;
+  color: rgba(255, 79, 134, 0.95);
+  text-align: center;
+}
+
+.dcShareInput {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+/* ---------- Preview overlay ---------- */
+.dcPreviewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.dcPreviewModal {
+  width: min(760px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
   border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.25);
   padding: 14px;
 }
 
-.previewTop {
+.dcPreviewTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 8px 10px;
+  gap: 10px;
+  padding-bottom: 10px;
 }
 
-.previewHeading {
+.dcPreviewTitle {
   font-weight: 950;
-  letter-spacing: 1px;
-  color: var(--pink);
+  color: rgba(255, 79, 134, 0.95);
 }
 
-.previewClose {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  cursor: pointer;
-
-  border: 1px solid rgba(255, 79, 134, 0.45);
-  background: rgba(138, 210, 219, 0.85);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-  font-size: 18px;
-}
-
-.previewBigImg {
+.dcPreviewImg {
   width: 100%;
   height: auto;
-  border-radius: 18px;
   display: block;
-}
-
-.previewActions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px 6px 4px;
-  flex-wrap: wrap;
-}
-
-.previewActions button {
-  border: 1px solid rgba(255, 79, 134, 0.35);
-  cursor: pointer;
-  border-radius: 16px;
-  padding: 12px 16px;
-  font-weight: 950;
-  background: rgba(255, 182, 207, 0.92);
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 520px) {
-  .modalOverlay {
-    padding: 10px;
-  }
-
-  .modalTop {
-    padding: 12px;
-  }
-
-  .modalMiddle {
-    padding: 0 12px 10px;
-  }
-
-  .metaRow {
-    grid-template-columns: 1fr;
-  }
-
-  .metaLabel--wide {
-    grid-column: auto;
-  }
-
-  .drawCanvas {
-    height: clamp(220px, 36vh, 320px);
-  }
-
-  .previewRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .previewRow button {
-    padding: 12px 8px;
-    font-size: 14px;
-  }
-}
-
-/* Landscape phones — keep buttons visible */
-@media (max-height: 520px) and (orientation: landscape) {
-  .modal {
-    height: 94vh;
-  }
-
-  .drawCanvas {
-    height: clamp(180px, 30vh, 240px);
-  }
-
-  .previewRow button {
-    padding: 10px 8px;
-  }
-}
-
-.shareBox {
-  margin-top: 18px;
-  padding: 14px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+.dcPreviewActions {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 10px;
+  justify-content: center;
+  padding-top: 12px;
 }
 
-.shareTitle {
-  font-weight: 800;
-  text-align: center;
-  color: #ff4f86;
-}
-
-.shareInline {
-  margin-top: 14px;
+.dcLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 14px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12);
-  display: grid;
-  gap: 8px;
-}
-
-.shareInlineTitle {
+  background: rgba(94, 198, 222, 0.22);
+  border: 1px solid rgba(94, 198, 222, 0.35);
+  text-decoration: none;
   font-weight: 900;
-  color: #ff4f86;
-  text-align: center;
+  color: rgba(20, 70, 82, 0.92);
 }
 
-.shareInlineUrl {
-  font-size: 12px;
-  word-break: break-all;
-  padding: 10px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.04);
+/* ---------- Mobile ---------- */
+@media (max-width: 520px) {
+  .dcOverlay {
+    padding: 10px;
+  }
+  .dcBody {
+    padding: 12px;
+  }
+  .dcGrid {
+    grid-template-columns: 1fr;
+  }
+  .dcFieldWide {
+    grid-column: auto;
+  }
+  .dcFooter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dcCanvas {
+    height: clamp(220px, 40vh, 340px);
+  }
+}
+
+/* Landscape phones: keep footer visible */
+@media (max-height: 520px) and (orientation: landscape) {
+  .dcModal {
+    height: 94vh;
+  }
+  .dcCanvas {
+    height: clamp(160px, 30vh, 220px);
+  }
 }

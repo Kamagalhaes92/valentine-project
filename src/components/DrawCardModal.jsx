@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "../styles/drawCard.css";
-
 import { saveCard, uploadCardImage } from "../firebase";
 
 const EMOJIS = ["💖", "😘", "🌹", "🦆", "✨"];
+const MAX_STROKES = 5;
 
 export default function DrawCardModal({ onClose }) {
-  const [shareUrl, setShareUrl] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   // ---------------------------
   // Refs
   // ---------------------------
@@ -15,38 +13,44 @@ export default function DrawCardModal({ onClose }) {
   const drawingRef = useRef(false);
 
   // ---------------------------
-  // UI state
-  // ---------------------------
-  const [activeEmoji, setActiveEmoji] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState("");
-  const [strokeCount, setStrokeCount] = useState(0);
-  const MAX_STROKES = 5;
-
-  // ---------------------------
-  // Card fields
+  // Form state
   // ---------------------------
   const [toName, setToName] = useState("");
   const [fromName, setFromName] = useState("");
   const [label, setLabel] = useState("");
-  const [copied, setCopied] = useState(false);
   const [note, setNote] = useState(
     "You are my heart, my life, my one and only thought. 💖",
   );
 
   // ---------------------------
-  // Brush
+  // Drawing state
   // ---------------------------
-  const [brush, setBrush] = useState(12);
-  const [color, setColor] = useState("#7b3fe4");
+  const [activeEmoji, setActiveEmoji] = useState(null);
+  const [strokeCount, setStrokeCount] = useState(0);
+  const [brush, setBrush] = useState(10);
+  const [color, setColor] = useState("#ff4f86");
+
+  // ---------------------------
+  // Preview / share
+  // ---------------------------
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const canShare = useMemo(
+    () => toName.trim() && fromName.trim(),
+    [toName, fromName],
+  );
+  const strokesLeft = Math.max(0, MAX_STROKES - strokeCount);
 
   // ---------------------------
   // Canvas helpers
   // ---------------------------
   const getCtx = useCallback(() => {
     const c = canvasRef.current;
-    if (!c) return null;
-    return c.getContext("2d");
+    return c ? c.getContext("2d") : null;
   }, []);
 
   const applyPenStyle = useCallback(
@@ -56,8 +60,8 @@ export default function DrawCardModal({ onClose }) {
       ctx.lineJoin = "round";
       ctx.strokeStyle = color;
       ctx.lineWidth = brush;
-      ctx.shadowColor = `${color}55`;
-      ctx.shadowBlur = 4;
+      ctx.shadowColor = `${color}33`;
+      ctx.shadowBlur = 3;
     },
     [brush, color],
   );
@@ -65,33 +69,33 @@ export default function DrawCardModal({ onClose }) {
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // keep drawing when resizing
-    const snapshot = document.createElement("canvas");
-    snapshot.width = canvas.width;
-    snapshot.height = canvas.height;
-    snapshot.getContext("2d")?.drawImage(canvas, 0, 0);
+    // snapshot so resize doesn't wipe drawings
+    const snap = document.createElement("canvas");
+    snap.width = canvas.width;
+    snap.height = canvas.height;
+    snap.getContext("2d")?.drawImage(canvas, 0, 0);
 
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
 
+    // map drawing coords to CSS pixels
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // restore old content
+    // restore snapshot scaled to new size
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(
-      snapshot,
+      snap,
       0,
       0,
-      snapshot.width,
-      snapshot.height,
+      snap.width,
+      snap.height,
       0,
       0,
       canvas.width,
@@ -102,81 +106,15 @@ export default function DrawCardModal({ onClose }) {
     applyPenStyle(ctx);
   }, [applyPenStyle]);
 
-  const getPosFromPointerEvent = useCallback((e) => {
+  const getPos = useCallback((e) => {
     const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }, []);
 
   // ---------------------------
-  // Build final card image
-  // ---------------------------
-  const buildFinalCardDataUrl = useCallback(() => {
-    const drawCanvas = canvasRef.current;
-    const dpr = window.devicePixelRatio || 1;
-
-    const W = 720;
-    const H = 480;
-
-    const out = document.createElement("canvas");
-    out.width = W * dpr;
-    out.height = H * dpr;
-
-    const ctx = out.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Background
-    ctx.fillStyle = "#ffe6f1";
-    ctx.fillRect(0, 0, W, H);
-
-    // Card
-    ctx.fillStyle = "rgba(255,255,255,0.92)";
-    roundRect(ctx, 40, 40, W - 80, H - 80, 26);
-    ctx.fill();
-
-    // Border
-    ctx.strokeStyle = "rgba(255, 79, 134, 0.45)";
-    ctx.lineWidth = 6;
-    roundRect(ctx, 40, 40, W - 80, H - 80, 26);
-    ctx.stroke();
-
-    // Top message
-    ctx.fillStyle = "#333";
-    ctx.font = "700 26px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctx.textAlign = "center";
-    wrapText(ctx, note || "Happy Valentine’s Day! 💖", W / 2, 95, W - 140, 30);
-
-    // Optional label
-    if (label.trim()) {
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.font = "700 16px system-ui, -apple-system, Segoe UI, sans-serif";
-      ctx.fillText(label.trim(), W / 2, 135);
-    }
-
-    // Drawing frame
-    ctx.strokeStyle = "rgba(0,0,0,0.12)";
-    ctx.lineWidth = 3;
-    roundRect(ctx, 120, 150, W - 240, 300, 18);
-    ctx.stroke();
-
-    // User drawing
-    if (drawCanvas) ctx.drawImage(drawCanvas, 120, 150, W - 240, 300);
-
-    // To/From
-    ctx.fillStyle = "#ff4f86";
-    ctx.font = "800 34px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(toName ? `For ${toName}` : "For my Valentine", W / 2, 510);
-
-    ctx.fillStyle = "#666";
-    ctx.font = "700 22px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctx.fillText(fromName ? `From ${fromName}` : "From ________", W / 2, 548);
-
-    return out.toDataURL("image/png", 0.85);
-  }, [fromName, label, note, toName]);
-
-  // ---------------------------
-  // Canvas interactions (Pointer Events)
+  // Drawing logic
   // ---------------------------
   const stampEmojiAt = useCallback(
     (emoji, x, y) => {
@@ -185,7 +123,7 @@ export default function DrawCardModal({ onClose }) {
 
       ctx.save();
       ctx.shadowBlur = 0;
-      ctx.font = "48px serif";
+      ctx.font = "44px serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(emoji, x, y);
@@ -196,45 +134,45 @@ export default function DrawCardModal({ onClose }) {
 
   const onPointerDown = useCallback(
     (e) => {
-      if (!activeEmoji && strokeCount >= MAX_STROKES) return;
       const canvas = canvasRef.current;
       const ctx = getCtx();
       if (!canvas || !ctx) return;
 
       canvas.setPointerCapture?.(e.pointerId);
 
-      const { x, y } = getPosFromPointerEvent(e);
+      const { x, y } = getPos(e);
 
-      // Emoji mode
+      // Emoji stamping
       if (activeEmoji) {
         stampEmojiAt(activeEmoji, x, y);
         setActiveEmoji(null);
         return;
       }
 
+      // Limit strokes
+      if (strokeCount >= MAX_STROKES) return;
+
       setStrokeCount((n) => n + 1);
       drawingRef.current = true;
       ctx.beginPath();
       ctx.moveTo(x, y);
     },
-    [activeEmoji, getCtx, getPosFromPointerEvent, stampEmojiAt],
+    [activeEmoji, getCtx, getPos, stampEmojiAt, strokeCount],
   );
 
   const onPointerMove = useCallback(
     (e) => {
       if (!drawingRef.current) return;
-
       const ctx = getCtx();
       if (!ctx) return;
 
-      const { x, y } = getPosFromPointerEvent(e);
-
+      const { x, y } = getPos(e);
       ctx.lineTo(x, y);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(x, y);
     },
-    [getCtx, getPosFromPointerEvent],
+    [getCtx, getPos],
   );
 
   const onPointerUp = useCallback(() => {
@@ -242,10 +180,79 @@ export default function DrawCardModal({ onClose }) {
   }, []);
 
   // ---------------------------
+  // Build card PNG
+  // ---------------------------
+  const buildFinalCardDataUrl = useCallback(() => {
+    const drawCanvas = canvasRef.current;
+    const dpr = window.devicePixelRatio || 1;
+
+    const W = 720;
+    const H = 560;
+
+    const out = document.createElement("canvas");
+    out.width = W * dpr;
+    out.height = H * dpr;
+
+    const ctx = out.getContext("2d");
+    if (!ctx) return "";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // background
+    ctx.fillStyle = "#ffeaf3";
+    ctx.fillRect(0, 0, W, H);
+
+    // card
+    ctx.fillStyle = "rgba(255,255,255,0.94)";
+    roundRect(ctx, 38, 38, W - 76, H - 76, 26);
+    ctx.fill();
+
+    // border
+    ctx.strokeStyle = "rgba(255, 79, 134, 0.40)";
+    ctx.lineWidth = 6;
+    roundRect(ctx, 38, 38, W - 76, H - 76, 26);
+    ctx.stroke();
+
+    // message
+    ctx.fillStyle = "rgba(25, 25, 25, 0.92)";
+    ctx.font = "700 26px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.textAlign = "center";
+    wrapText(ctx, note || "Happy Valentine’s Day! 💖", W / 2, 105, W - 140, 30);
+
+    // label
+    if (label.trim()) {
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.font = "700 16px system-ui, -apple-system, Segoe UI, sans-serif";
+      ctx.fillText(label.trim(), W / 2, 155);
+    }
+
+    // drawing frame
+    ctx.strokeStyle = "rgba(0,0,0,0.10)";
+    ctx.lineWidth = 3;
+    roundRect(ctx, 110, 180, W - 220, 260, 18);
+    ctx.stroke();
+
+    // drawing content (note: your canvas is already DPI scaled; drawing it into CSS pixels is okay here)
+    if (drawCanvas) ctx.drawImage(drawCanvas, 110, 180, W - 220, 260);
+
+    // to/from
+    ctx.fillStyle = "#ff4f86";
+    ctx.font = "800 32px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText(toName ? `For ${toName}` : "For my Valentine", W / 2, 485);
+
+    ctx.fillStyle = "rgba(30,30,30,0.62)";
+    ctx.font = "700 22px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText(fromName ? `From ${fromName}` : "From ________", W / 2, 522);
+
+    return out.toDataURL("image/png", 0.92);
+  }, [fromName, label, note, toName]);
+
+  // ---------------------------
   // Actions
   // ---------------------------
   const clearCanvas = useCallback(() => {
     setStrokeCount(0);
+    setActiveEmoji(null);
+
     const canvas = canvasRef.current;
     const ctx = getCtx();
     if (!canvas || !ctx) return;
@@ -253,11 +260,11 @@ export default function DrawCardModal({ onClose }) {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.restore();
 
     setPreviewUrl("");
     setShowPreview(false);
+    setShareUrl("");
   }, [getCtx]);
 
   const makePreview = useCallback(() => {
@@ -268,53 +275,79 @@ export default function DrawCardModal({ onClose }) {
 
   const download = useCallback(() => {
     const url = previewUrl || buildFinalCardDataUrl();
-    setPreviewUrl(url);
+    if (!url) return;
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = toName ? `valentine-for-${toName}.png` : "valentine-card.png";
+    a.download = toName
+      ? `valentine-for-${slug(toName)}.png`
+      : "valentine-card.png";
     a.click();
   }, [buildFinalCardDataUrl, previewUrl, toName]);
 
   const share = useCallback(async () => {
+    if (!canShare) {
+      alert("Please fill in both To and From 💌");
+      return;
+    }
+
+    // avoid re-uploading if we already have a shareUrl
+    if (shareUrl) {
+      setShowPreview(true);
+      return;
+    }
+
     try {
       setIsSaving(true);
 
-      // Build preview (dataUrl)
       const dataUrl = previewUrl || buildFinalCardDataUrl();
       setPreviewUrl(dataUrl);
       setShowPreview(true);
 
-      // Convert to Blob and upload to Storage
       const blob = await (await fetch(dataUrl)).blob();
       const imageUrl = await uploadCardImage(blob, "valentine.png");
 
-      // Save card to Firestore (store the imageUrl from Storage!)
       const cardId = await saveCard({
-        toName,
-        fromName,
-        label,
+        toName: toName.trim(),
+        fromName: fromName.trim(),
+        label: label.trim(),
         note,
-        imageUrl, // <- this is what Valentine page must render
+        imageUrl,
         createdAt: Date.now(),
       });
 
-      // Create share link (will be localhost in dev, real domain after deploy)
-      const url = `${window.location.origin}/valentine?card=${cardId}`;
+      const url = `${window.location.origin}/?card=${cardId}`;
       setShareUrl(url);
-
-      // optional: auto copy
-      // await navigator.clipboard.writeText(url);
     } catch (err) {
       console.error(err);
       alert(`Share failed: ${err?.message || err}`);
     } finally {
       setIsSaving(false);
     }
-  }, [previewUrl, buildFinalCardDataUrl, toName, fromName, label, note]);
+  }, [
+    buildFinalCardDataUrl,
+    canShare,
+    fromName,
+    label,
+    note,
+    previewUrl,
+    shareUrl,
+    toName,
+  ]);
+
+  const copyLink = useCallback(async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      alert("Couldn’t copy. Please select and copy manually.");
+    }
+  }, [shareUrl]);
 
   // ---------------------------
-  // Mount effects
+  // Effects
   // ---------------------------
   useEffect(() => {
     resizeCanvas();
@@ -350,48 +383,53 @@ export default function DrawCardModal({ onClose }) {
   // ---------------------------
   return (
     <div
-      className="modalOverlay"
+      className="dcOverlay"
       role="dialog"
       aria-modal="true"
       onMouseDown={(e) => {
-        if (e.target.classList.contains("modalOverlay")) onClose?.();
+        if (e.target.classList.contains("dcOverlay")) onClose?.();
       }}
     >
-      <div className="modal modal--big modal--scrapbook">
-        <div className="modalTop">
-          <div className="modalTitle">Draw your Valentine card ✍️</div>
-          <button className="modalClose" onClick={onClose} aria-label="Close">
+      <div className="dcModal">
+        <header className="dcTop">
+          <div className="dcTitle">Draw your Valentine card ✍️</div>
+          <button className="dcClose" onClick={onClose} aria-label="Close">
             ✕
           </button>
-        </div>
+        </header>
 
-        {/* Scrollable middle so small phones still see buttons */}
-        <div className="modalMiddle">
-          <div className="metaRow">
-            <label className="metaLabel">
-              To:
+        <main className="dcBody">
+          <section className="dcGrid">
+            <label className="dcField">
+              To
               <input
-                className="metaInput"
+                className="dcInput"
                 value={toName}
-                onChange={(e) => setToName(e.target.value)}
+                onChange={(e) => {
+                  setToName(e.target.value);
+                  setShareUrl("");
+                }}
                 placeholder="Someone special"
               />
             </label>
 
-            <label className="metaLabel">
-              From:
+            <label className="dcField">
+              From
               <input
-                className="metaInput"
+                className="dcInput"
                 value={fromName}
-                onChange={(e) => setFromName(e.target.value)}
-                placeholder="Your Name"
+                onChange={(e) => {
+                  setFromName(e.target.value);
+                  setShareUrl("");
+                }}
+                placeholder="Your name"
               />
             </label>
 
-            <label className="metaLabel metaLabel--wide">
-              Message:
+            <label className="dcField dcFieldWide">
+              Message
               <input
-                className="metaInput"
+                className="dcInput"
                 value={note}
                 onChange={(e) => {
                   setNote(e.target.value);
@@ -401,17 +439,20 @@ export default function DrawCardModal({ onClose }) {
               />
             </label>
 
-            <label className="metaLabel">
-              What is this for?
+            <label className="dcField dcFieldWide">
+              Label (optional)
               <input
-                className="metaInput"
+                className="dcInput"
                 value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                placeholder="ex: For Friend / For Mom / For my Valentine"
+                onChange={(e) => {
+                  setLabel(e.target.value);
+                  setShareUrl("");
+                }}
+                placeholder="ex: For Mom / For Friend"
               />
             </label>
 
-            <label className="brush">
+            <label className="dcField">
               Brush
               <input
                 type="range"
@@ -422,7 +463,7 @@ export default function DrawCardModal({ onClose }) {
               />
             </label>
 
-            <label className="brush">
+            <label className="dcField">
               Color
               <input
                 type="color"
@@ -430,170 +471,154 @@ export default function DrawCardModal({ onClose }) {
                 onChange={(e) => setColor(e.target.value)}
               />
             </label>
-          </div>
+          </section>
 
-          <div className="emojiRow">
-            {activeEmoji && (
-              <div className="stampHint">
-                Tap the canvas to place: <span>{activeEmoji}</span>
+          <section className="dcTools">
+            <div className="dcToolsRow">
+              <div className="dcToolsTitle">Emojis</div>
+              <div className="dcToolsHint">
+                {activeEmoji ? (
+                  <>
+                    Tap canvas to place{" "}
+                    <span className="dcBig">{activeEmoji}</span>
+                  </>
+                ) : (
+                  <>
+                    Strokes left: <b>{strokesLeft}</b>
+                  </>
+                )}
               </div>
-            )}
-
-            <div className="emojiTitle">Add cute emojis:</div>
-            <div className="strokeHint">
-              Strokes left: {Math.max(0, MAX_STROKES - strokeCount)}
             </div>
 
-            <div className="emojiBtns">
-              {EMOJIS.map((emoji) => (
+            <div className="dcEmojiRow">
+              {EMOJIS.map((emo) => (
                 <button
-                  key={emoji}
+                  key={emo}
                   type="button"
-                  className={`emojiBtn ${
-                    activeEmoji === emoji ? "emojiBtn--active" : ""
-                  }`}
-                  onClick={() => setActiveEmoji(emoji)}
+                  className={`dcEmoji ${activeEmoji === emo ? "isActive" : ""}`}
+                  onClick={() => setActiveEmoji(emo)}
                 >
-                  {emoji}
+                  {emo}
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="canvasWrap">
+          <section className="dcCanvasWrap">
             <canvas
               ref={canvasRef}
-              className="drawCanvas drawCanvas--pink"
+              className="dcCanvas"
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
               onPointerLeave={onPointerUp}
             />
-          </div>
-        </div>
+          </section>
+        </main>
 
-        <div className="previewRow">
-          <button type="button" onClick={makePreview}>
+        <footer className="dcFooter">
+          <button className="dcBtn" type="button" onClick={makePreview}>
             Preview
           </button>
-          <button type="button" onClick={clearCanvas}>
+          <button className="dcBtn" type="button" onClick={clearCanvas}>
             Clear
           </button>
-          <button type="button" onClick={download}>
+          <button className="dcBtn" type="button" onClick={download}>
             Download
           </button>
-          <button type="button" onClick={share} disabled={isSaving}>
+          <button
+            className="dcBtn dcBtnPrimary"
+            type="button"
+            onClick={share}
+            disabled={isSaving || !canShare}
+            title={
+              !canShare ? "Add To and From to generate a share link 💌" : ""
+            }
+          >
             {isSaving ? "Saving..." : "Share 💌"}
           </button>
-        </div>
+        </footer>
 
         {shareUrl && (
-          <div className="shareInline">
-            <div className="shareInlineTitle">
-              Your surprise link is ready 💌
-            </div>
+          <div className="dcShareBar">
+            <div className="dcShareTitle">Your surprise link is ready 💌</div>
             <input
-              className="shareInlineUrl"
+              className="dcShareInput"
               value={shareUrl}
               readOnly
               onFocus={(e) => e.target.select()}
             />
-
             <button
+              className="dcBtn dcBtnPrimary"
               type="button"
-              onClick={() => navigator.clipboard.writeText(shareUrl)}
+              onClick={copyLink}
             >
-              Copy link
+              {copied ? "Copied! 💘" : "Copy link"}
             </button>
           </div>
         )}
+      </div>
 
-        {showPreview && previewUrl && (
-          <div className="previewOverlay" role="dialog" aria-modal="true">
-            <div className="previewModal">
-              <div className="previewTop">
-                <div className="previewHeading">CARD PREVIEW</div>
-                <button
-                  type="button"
-                  className="previewClose"
-                  onClick={() => setShowPreview(false)}
-                  aria-label="Close preview"
-                >
-                  ✕
-                </button>
-              </div>
+      {showPreview && previewUrl && (
+        <div className="dcPreviewOverlay" role="dialog" aria-modal="true">
+          <div className="dcPreviewModal">
+            <div className="dcPreviewTop">
+              <div className="dcPreviewTitle">Card Preview</div>
+              <button
+                className="dcClose"
+                type="button"
+                onClick={() => setShowPreview(false)}
+                aria-label="Close preview"
+              >
+                ✕
+              </button>
+            </div>
 
-              <img
-                className="previewBigImg"
-                src={previewUrl}
-                alt="Card preview"
-              />
+            <img className="dcPreviewImg" src={previewUrl} alt="Card preview" />
 
-              <div className="previewActions">
-                <button type="button" onClick={download}>
-                  Download
-                </button>
-                <button type="button" onClick={share}>
-                  Share 💌
-                </button>
-                {shareUrl && (
-                  <div className="shareBox">
-                    <div className="shareTitle">
-                      Okay… now send the surprise 💌
-                    </div>
+            <div className="dcPreviewActions">
+              <button className="dcBtn" type="button" onClick={download}>
+                Download
+              </button>
+              {shareUrl && (
+                <>
+                  <button
+                    className="dcBtn dcBtnPrimary"
+                    type="button"
+                    onClick={copyLink}
+                  >
+                    {copied ? "Copied! 💘" : "Copy link"}
+                  </button>
 
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(shareUrl);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 1400);
-                        } catch {
-                          alert(
-                            "Couldn’t copy. Select the link and copy manually.",
-                          );
-                        }
-                      }}
-                    >
-                      {copied ? "Copied! 💘" : "Copy link"}
-                    </button>
+                  <a
+                    className="dcLink"
+                    href={`https://wa.me/?text=${encodeURIComponent(`I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    WhatsApp
+                  </a>
 
-                    <a
-                      href={`https://wa.me/?text=${encodeURIComponent(
-                        `I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`,
-                      )}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      WhatsApp
-                    </a>
+                  <a
+                    className="dcLink"
+                    href={`sms:?&body=${encodeURIComponent(`I need to ask you something… 💌 ${shareUrl}`)}`}
+                  >
+                    Text
+                  </a>
 
-                    <a
-                      href={`sms:?&body=${encodeURIComponent(
-                        `I need to ask you something… 💌 ${shareUrl}`,
-                      )}`}
-                    >
-                      Text message
-                    </a>
-
-                    <a
-                      href={`mailto:?subject=${encodeURIComponent(
-                        "Can I ask you something? 💌",
-                      )}&body=${encodeURIComponent(
-                        `I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`,
-                      )}`}
-                    >
-                      Email
-                    </a>
-                  </div>
-                )}
-              </div>
+                  <a
+                    className="dcLink"
+                    href={`mailto:?subject=${encodeURIComponent("Can I ask you something? 💌")}&body=${encodeURIComponent(`I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`)}`}
+                  >
+                    Email
+                  </a>
+                </>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -617,16 +642,23 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   let line = "";
   let yy = y;
 
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + " ";
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
+  for (let i = 0; i < words.length; i++) {
+    const test = line + words[i] + " ";
+    if (ctx.measureText(test).width > maxWidth && i > 0) {
       ctx.fillText(line.trim(), x, yy);
-      line = words[n] + " ";
+      line = words[i] + " ";
       yy += lineHeight;
     } else {
-      line = testLine;
+      line = test;
     }
   }
   ctx.fillText(line.trim(), x, yy);
+}
+
+function slug(s) {
+  return String(s)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }

@@ -1,182 +1,68 @@
-/* =========================
+/* =========================================================
+   VALENTINE PAGE — CLEAN + ORGANIZED
+   (Paste entire file)
+   Notes:
+   - Removed duplicates: sealHeart, sealPulse, sealHeartIcon, rightControls, valBack, envelopeHint, duckLayer, valBackUnder
+   - Keeps ONLY classes used by your current Valentine.jsx:
+     valentinePage, valTopBar, valTitle, valTopRight, iconBtn,
+     ctaHeart, ctaHalo, ctaSparkles, ctaLabel,
+     cornerSix, sprinkleLayer/sprinkle, fallingHearts/fallHeart,
+     sceneDuck/sceneDuck--party,
+     centerStack, envelope + parts, sealWrap/sealHeart/sealHeartIcon/sealHint,
+     questionFrame/questionCard/questionTitle/buttonRow/heartBtn + variants,
+     yesScreen/yesMessage/yesGif/backBtn,
+     receivedCard + children, receivedCardActions/receivedActionBtn,
+     pageBackBtn
+========================================================= */
+
+/* -------------------------
+   TOKENS
+------------------------- */
+:root {
+  --ink: rgba(58, 43, 46, 0.92);
+  --ink-soft: rgba(58, 43, 46, 0.78);
+
+  --pink: #ff4f86;
+  --coral: #f16c68;
+  --aqua: rgba(94, 198, 222, 0.85);
+
+  --glass: rgba(255, 255, 255, 0.86);
+  --glass-strong: rgba(255, 255, 255, 0.92);
+
+  --shadow-lg: 0 40px 110px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 14px 30px rgba(0, 0, 0, 0.14);
+  --shadow-sm: 0 10px 22px rgba(0, 0, 0, 0.1);
+}
+
+/* -------------------------
    PAGE
-========================= */
+------------------------- */
 
-/* =========================
-   RECEIVED CARD (scrapbook reveal)
-========================= */
-
-.receivedCard {
-  width: min(680px, 92vw);
-  padding: clamp(14px, 2.2vw, 22px);
-  border-radius: 22px;
-  text-align: center;
-
-  /* romantic glass paper */
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.92),
-    rgba(255, 240, 246, 0.86)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.92);
-
-  box-shadow:
-    0 40px 100px rgba(0, 0, 0, 0.22),
-    0 20px 44px rgba(0, 0, 0, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  position: relative;
-  overflow: hidden;
-
-  /* little “pop in” */
-  transform-origin: 30% 10%;
-  animation: cardReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-
-@keyframes cardReveal {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) rotate(-1.5deg) scale(0.96);
-    filter: blur(6px);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(0) rotate(0.6deg) scale(1.01);
-    filter: blur(0);
-  }
-  100% {
-    transform: translateY(0) rotate(0deg) scale(1);
-  }
-}
-
-/* inner border */
-.receivedCard::before {
-  content: "";
-  position: absolute;
-  inset: 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(241, 108, 104, 0.22);
-  box-shadow: inset 0 0 0 1px rgba(94, 198, 222, 0.16);
+/* Make sure decorative layers NEVER block clicks */
+.valentinePage::before,
+.sprinkleLayer,
+.fallingHearts,
+.cornerSix,
+.sceneDuck {
   pointer-events: none;
 }
 
-/* tape corners (super scrapbook) */
-.receivedCard::after {
-  content: "";
-  position: absolute;
-  left: 18px;
-  top: 10px;
-  width: 92px;
-  height: 26px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-  transform: rotate(-8deg);
-  opacity: 0.8;
-  pointer-events: none;
+/* Ensure the hamburger/menu button is ALWAYS above */
+.hamburgerMenu,
+.hamburgerButton,
+.hamburgerToggle,
+.menuButton {
+  position: fixed; /* or absolute if you prefer */
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  pointer-events: auto;
 }
 
-/* message/note */
-.receivedCardBody {
-  margin: 4px auto 12px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  line-height: 1.3;
-
-  font-family: "Annie Use Your Telescope", cursive;
-  font-weight: 900;
-  font-size: clamp(18px, 2.6vw, 24px);
-  color: #ff4f86;
-
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(94, 198, 222, 0.55);
-
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12);
+/* Top bar should not steal clicks on the left side */
+.valTopBar {
+  z-index: 3000;
 }
-
-/* optional label (tiny tag) */
-.receivedCardLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  margin: 0 auto 10px;
-  padding: 6px 12px;
-  border-radius: 999px;
-
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-
-  color: rgba(58, 43, 46, 0.92);
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(241, 108, 104, 0.18);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
-}
-
-/* to/from area */
-.receivedCardMeta {
-  display: grid;
-  gap: 6px;
-  margin: 10px auto 12px;
-}
-
-.receivedCardTo {
-  font-weight: 900;
-  font-size: 16px;
-  color: rgba(58, 43, 46, 0.9);
-}
-
-.receivedCardFrom {
-  font-weight: 900;
-  font-size: 15px;
-  opacity: 0.8;
-}
-
-/* image frame */
-.receivedCardImg {
-  width: min(520px, 86vw);
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 12px auto 2px;
-
-  border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-
-  box-shadow:
-    0 28px 70px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
-}
-
-/* small phones */
-@media (max-width: 640px) {
-  .receivedCard {
-    width: min(560px, 94vw);
-    border-radius: 18px;
-  }
-  .receivedCard::before {
-    inset: 12px;
-  }
-  .receivedCardImg {
-    width: 100%;
-    border-radius: 16px;
-  }
-
-  .yesScreen {
-    padding: 18px 12px;
-  }
-
-  .yesGif {
-    width: min(420px, 78vw);
-    max-height: 26vh;
-    object-fit: contain;
-  }
-}
-
 .valentinePage {
   min-height: 100vh;
   min-height: 100svh;
@@ -187,7 +73,6 @@
 
   background: url("/background.png") center / cover no-repeat;
 
-  /* ✨ THIS is what centers the card */
   display: grid;
   place-items: center;
 }
@@ -210,63 +95,103 @@
   z-index: 0;
 }
 
-/* =========================
-   CORNER 6.PNG (extreme bottom corners)
-========================= */
-.cornerSix {
+/* -------------------------
+   GLOBAL BACK (outside containers)
+------------------------- */
+.pageBackBtn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 9999;
+
+  border: 0;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-md);
+  font-weight: 900;
+  color: var(--ink);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.pageBackBtn:active {
+  transform: translateY(1px);
+}
+
+/* -------------------------
+   TOP BAR
+------------------------- */
+.valTopBar {
   position: absolute;
-  bottom: -18px;
-  width: min(260px, 46vw);
-  height: auto;
-  pointer-events: none;
-  z-index: 80;
-  opacity: 0.95;
-  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.16));
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 250;
+
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
 }
 
-.cornerSix--left {
-  left: -26px;
-}
-.cornerSix--right {
-  right: -26px;
-  transform: scaleX(-1);
+.valTitle {
+  margin: 0;
+  text-align: center;
+
+  text-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+
+  font-family: "Gorditas", sans-serif;
+  font-size: clamp(28px, 5vw, 56px);
+  letter-spacing: 0.5px;
+
+  color: #6c95bf;
+
+  /* pink outline */
+  -webkit-text-stroke: 2px rgba(255, 120, 170, 0.9);
+
+  text-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.7),
+    0 20px 45px rgba(0, 0, 0, 0.18);
 }
 
-@media (max-width: 640px) {
-  .cornerSix {
-    width: min(160px, 52vw);
-    bottom: -14px;
-  }
-  .cornerSix--left {
-    left: -18px;
-  }
-  .cornerSix--right {
-    right: -18px;
-  }
-}
-
-/* =========================
-   TOP RIGHT CONTROLS
-========================= */
-.rightControls {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 200;
+.valTopRight {
   display: flex;
-  flex-direction: column;
   gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.valTopBar {
+  pointer-events: none;
+}
+
+/* but the interactive stuff inside should still work */
+.valTopRight,
+.valTopRight *,
+.valTitle {
+  pointer-events: auto;
+}
+
+.valTopBar {
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
 }
 
 .iconBtn {
-  border: none;
+  border: 0;
   cursor: pointer;
   border-radius: 16px;
   padding: 10px 14px;
+
   background: rgba(255, 255, 255, 0.88);
   font-size: 16px;
   font-weight: 800;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+
+  box-shadow: var(--shadow-md);
   transition:
     transform 140ms ease,
     filter 140ms ease;
@@ -279,9 +204,141 @@
   transform: translateY(1px);
 }
 
-/* =========================
-   SPRINKLES / STARS
-========================= */
+/* -------------------------
+   CTA (Create Card)
+------------------------- */
+.ctaHeart {
+  position: relative;
+  border: 0;
+  cursor: pointer;
+
+  width: 170px;
+  height: 56px;
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 170, 210, 0.92),
+    rgba(120, 210, 255, 0.72)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.6);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 22px 55px rgba(255, 120, 180, 0.22),
+    var(--shadow-md),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  transition:
+    transform 140ms ease,
+    filter 140ms ease,
+    box-shadow 140ms ease;
+}
+.ctaHeart:hover {
+  filter: brightness(1.03);
+  transform: translateY(-2px);
+}
+.ctaHeart:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+.ctaLabel {
+  font-family: "Gorditas", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.45);
+  text-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+}
+
+.ctaHalo {
+  position: absolute;
+  inset: -14px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 30% 40%,
+    rgba(255, 220, 245, 0.85),
+    rgba(160, 235, 255, 0.55),
+    transparent 72%
+  );
+  filter: blur(16px);
+  opacity: 0.8;
+  z-index: -1;
+  animation: ctaPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes ctaPulse {
+  0%,
+  100% {
+    transform: scale(0.98);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.95;
+  }
+}
+
+.ctaSparkles {
+  position: absolute;
+  inset: -28px;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.75) 1px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 2px, transparent 4px);
+  background-size:
+    90px 90px,
+    140px 140px,
+    210px 210px;
+  background-position:
+    0 0,
+    30px 60px,
+    80px 20px;
+
+  opacity: 0.55;
+  animation: sparkleDrift 2.8s linear infinite;
+}
+@keyframes sparkleDrift {
+  to {
+    transform: translateY(16px);
+  }
+}
+
+/* -------------------------
+   CORNER 6.PNG
+------------------------- */
+.cornerSix {
+  position: absolute;
+  bottom: -18px;
+  width: min(260px, 46vw);
+  height: auto;
+
+  pointer-events: none;
+  z-index: 80;
+
+  opacity: 0.95;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.16));
+}
+.cornerSix--left {
+  left: -26px;
+}
+.cornerSix--right {
+  right: -26px;
+  transform: scaleX(-1);
+}
+
+/* -------------------------
+   SPRINKLES
+------------------------- */
 .sprinkleLayer {
   position: absolute;
   inset: 0;
@@ -294,7 +351,9 @@
   width: 10px;
   height: 10px;
   opacity: 0.65;
+
   animation: sprinkleFloat linear infinite;
+
   background:
     radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 35%, transparent 45%),
     conic-gradient(
@@ -304,6 +363,7 @@
       rgba(255, 244, 186, 0.75),
       rgba(255, 214, 240, 0.85)
     );
+
   border-radius: 999px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
 }
@@ -322,21 +382,52 @@
   }
 }
 
-/* =========================
-   DUCKS
-========================= */
-.duckLayer {
+/* -------------------------
+   FALLING HEARTS
+------------------------- */
+.fallingHearts {
   position: absolute;
   inset: 0;
-  z-index: 2;
   pointer-events: none;
+  z-index: 90;
+  overflow: hidden;
 }
 
+.fallHeart {
+  position: absolute;
+  top: -40px;
+
+  background: url("/heart2.png") center / contain no-repeat;
+  opacity: 0.95;
+
+  animation-name: fallDown;
+  animation-timing-function: ease-in;
+  animation-iteration-count: 1;
+}
+
+@keyframes fallDown {
+  0% {
+    transform: translateY(-40px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(260deg);
+    opacity: 0.9;
+  }
+}
+
+/* -------------------------
+   DUCKS
+------------------------- */
 .sceneDuck {
   position: absolute;
   transform: translate(-50%, -50%);
   opacity: 0.95;
   will-change: transform;
+
   filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.22));
 }
 
@@ -362,10 +453,199 @@
   }
 }
 
-/* =========================
-   QUESTION FRAME + CARD
-   (centers title + buttons reliably)
-========================= */
+/* -------------------------
+   CENTER STACK (envelope area)
+------------------------- */
+.centerStack {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+}
+
+/* -------------------------
+   ENVELOPE
+------------------------- */
+.envelope {
+  position: relative;
+  width: min(560px, 92vw);
+  height: min(360px, 44vh);
+
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+
+  z-index: 30;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.envelopeBack {
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(255, 232, 244, 0.92)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.85);
+
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.envelopePaper {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 18px;
+  height: 76%;
+
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 79, 134, 0.16);
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  transform: translateY(22px);
+  opacity: 0;
+
+  transition:
+    transform 650ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 250ms ease;
+  z-index: 1;
+}
+
+.envelopeFlap {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 14px;
+  height: 56%;
+
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 210, 232, 0.98),
+    rgba(255, 255, 255, 0.82)
+  );
+  border: 1px solid rgba(241, 108, 104, 0.18);
+
+  clip-path: polygon(0 0, 100% 0, 50% 75%);
+
+  transform-origin: 50% 0%;
+  transform: rotateX(0deg);
+  transition: transform 650ms cubic-bezier(0.2, 0.9, 0.2, 1);
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.1);
+  z-index: 3;
+}
+
+.envelope.isOpen .envelopeFlap {
+  transform: rotateX(180deg);
+}
+.envelope.isOpen .envelopePaper {
+  transform: translateY(-12px);
+  opacity: 1;
+}
+
+/* Seal + hint */
+.sealWrap {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+}
+
+/* ✅ flatter, softer seal */
+.sealHeart {
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+
+  background:
+    radial-gradient(
+      circle at 40% 35%,
+      #ffffff 0 18%,
+      rgba(255, 255, 255, 0) 45%
+    ),
+    radial-gradient(
+      circle at 50% 55%,
+      rgba(175, 235, 255, 0.75),
+      rgba(255, 190, 220, 0.7)
+    );
+
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+  animation: sealPulse 2.8s ease-in-out infinite;
+}
+
+.sealHeartIcon {
+  font-size: 22px;
+  opacity: 0.55;
+  transform: translateY(1px);
+  filter: blur(0.2px);
+}
+
+@keyframes sealPulse {
+  0%,
+  100% {
+    transform: scale(0.99);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+.sealHint {
+  padding: 10px 14px;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+
+  font-weight: 950;
+  font-family: "Gorditas", serif;
+  color: var(--ink);
+
+  box-shadow: var(--shadow-md);
+}
+
+/* -------------------------
+   QUESTION
+------------------------- */
+.questionClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.questionClose:active {
+  transform: translateY(1px) scale(0.98);
+}
 .questionFrame {
   position: relative;
   z-index: 20;
@@ -376,32 +656,29 @@
   place-items: center;
 }
 
-/* glass 3D panel */
 .questionCard {
   width: 100%;
   max-width: 760px;
 
-  /* 👇 makes it slightly taller */
   padding: clamp(30px, 5vw, 54px) clamp(24px, 4vw, 48px);
   min-height: clamp(260px, 34vh, 420px);
+
   border-radius: 18px;
   text-align: center;
+
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* vertical center inside card */
-  align-items: center; /* horizontal center */
+  justify-content: center;
+  align-items: center;
 
-  /* 💌 soft romantic paper */
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.92),
     rgba(255, 240, 246, 0.85)
   );
-
   border: 1px solid rgba(255, 255, 255, 0.9);
 
-  /* 🧱 stronger 3D depth */
   box-shadow:
     0 50px 120px rgba(0, 0, 0, 0.25),
     0 20px 40px rgba(0, 0, 0, 0.18),
@@ -410,25 +687,24 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 
-  /* 👇 LESS tilt (was 5deg before) */
   transform: perspective(1200px) rotateX(2deg);
-
   transition:
     transform 300ms ease,
     box-shadow 300ms ease;
 }
-/* inner border */
+
 .questionCard::before {
   content: "";
   position: absolute;
   inset: 14px;
   border-radius: 14px;
+
   border: 1px solid rgba(241, 108, 104, 0.25);
   box-shadow: inset 0 0 0 1px rgba(94, 198, 222, 0.18);
+
   pointer-events: none;
 }
 
-/* shine */
 .questionCard::after {
   content: "";
   position: absolute;
@@ -444,11 +720,11 @@
     rgba(255, 255, 255, 0.95),
     rgba(255, 240, 246, 0.4)
   );
-
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 0 0 40px 40px;
 
+  border-radius: 0 0 40px 40px;
   opacity: 0.8;
+
   pointer-events: none;
 }
 
@@ -459,46 +735,53 @@
     0 30px 60px rgba(0, 0, 0, 0.22);
 }
 
-/* Title */
 .questionTitle {
   position: relative;
   z-index: 2;
+
   margin: 0 auto;
-  max-width: 18ch; /* keeps it nicely centered on small screens */
+  max-width: 18ch;
+
   font-size: clamp(20px, 5.6vw, 40px);
   line-height: 1.1;
-  color: #f16c68;
-  -webkit-text-stroke: 1px rgba(94, 198, 222, 0.85);
+
+  color: var(--coral);
+  -webkit-text-stroke: 1px var(--aqua);
   font-family: "Gorditas", serif;
+
   text-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* Buttons row */
 .buttonRow {
   position: relative;
   z-index: 2;
   margin-top: 18px;
 
   display: flex;
-  justify-content: center; /* ✅ centers both */
+  justify-content: center;
   align-items: center;
 
   gap: clamp(14px, 5vw, 44px);
-  min-height: 140px; /* room for No to move */
+  min-height: 140px;
 }
 
 /* Heart buttons */
 .heartBtn {
   width: 140px;
   height: 120px;
-  border: none;
+
+  border: 0;
   cursor: pointer;
+
   background: url("/heartBtn.png") center / contain no-repeat;
+
   font-size: 26px;
   font-weight: 900;
-  color: #ff4f86;
+  color: var(--pink);
+
   display: grid;
   place-items: center;
+
   transition:
     transform 140ms ease,
     filter 140ms ease;
@@ -511,15 +794,6 @@
   transform: scale(0.98);
 }
 
-/* YES stays normal */
-.heartBtn--yes {
-  position: relative;
-}
-
-/* NO:
-   Default = normal centered layout like YES
-   Running = absolute with left/top set by JS (px)
-*/
 .heartBtn--no {
   position: relative;
 }
@@ -529,6 +803,7 @@
   left: 60%;
   top: 50%;
   transform: translate(-50%, -50%);
+
   transition:
     left 180ms ease,
     top 180ms ease,
@@ -538,17 +813,19 @@
   transform: translate(-50%, -50%) scale(1.08) rotate(-6deg);
 }
 
-/* =========================
+/* -------------------------
    YES SCREEN
-========================= */
+------------------------- */
 .yesScreen {
   position: absolute;
   inset: 0;
   z-index: 120;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   gap: 18px;
   text-align: center;
 }
@@ -556,11 +833,14 @@
 .yesMessage {
   font-size: 24px;
   font-weight: 900;
-  color: #ff4f86;
+  color: var(--pink);
+
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(94, 198, 222, 0.75);
+
   padding: 10px 14px;
   border-radius: 16px;
+
   font-family: "Annie Use Your Telescope", cursive;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
 }
@@ -572,172 +852,215 @@
 }
 
 .backBtn {
-  border: none;
+  border: 0;
   padding: 10px 18px;
   border-radius: 18px;
+
   font-weight: 800;
   cursor: pointer;
+
   background: #5ec6de;
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
 }
 
-/* =========================
-   FALLING HEARTS
-========================= */
-.fallingHearts {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 90;
-  overflow: hidden;
-}
-
-.fallHeart {
-  position: absolute;
-  top: -40px;
-  background: url("/heart2.png") center / contain no-repeat;
-  opacity: 0.95;
-  animation-name: fallDown;
-  animation-timing-function: ease-in;
-  animation-iteration-count: 1;
-}
-
-@keyframes fallDown {
-  0% {
-    transform: translateY(-40px) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(110vh) rotate(260deg);
-    opacity: 0.9;
-  }
-}
-
-/* =========================
-   CTA BUTTON
-========================= */
-.ctaHeart {
-  position: relative;
-  border: none;
-  cursor: pointer;
-  width: 170px;
-  height: 56px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+/* -------------------------
+   RECEIVED CARD (scrapbook reveal)
+------------------------- */
+.receivedCard {
+  width: min(680px, 92vw);
+  padding: clamp(14px, 2.2vw, 22px);
+  border-radius: 22px;
+  text-align: center;
 
   background: linear-gradient(
-    135deg,
-    rgba(255, 170, 210, 0.92),
-    rgba(120, 210, 255, 0.72)
+    180deg,
+    var(--glass-strong),
+    rgba(255, 240, 246, 0.86)
   );
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--glass-strong);
+
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.22),
+    0 20px 44px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 
-  box-shadow:
-    0 22px 55px rgba(255, 120, 180, 0.22),
-    0 12px 26px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  position: relative;
+  overflow: hidden;
 
-  transition:
-    transform 140ms ease,
-    filter 140ms ease,
-    box-shadow 140ms ease;
-}
-.ctaHeart:hover {
-  filter: brightness(1.03);
-  transform: translateY(-2px);
-}
-.ctaHeart:active {
-  transform: translateY(2px) scale(0.99);
+  transform-origin: 30% 10%;
+  animation: cardReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 
-.ctaLabel {
-  font-family: "Gorditas", system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 900;
-  color: rgba(58, 43, 46, 0.92);
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.45);
-  text-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
-}
-
-.ctaHalo {
-  position: absolute;
-  inset: -14px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle at 30% 40%,
-    rgba(255, 220, 245, 0.85),
-    rgba(160, 235, 255, 0.55),
-    transparent 72%
-  );
-  filter: blur(16px);
-  opacity: 0.8;
-  z-index: -1;
-  animation: ctaPulse 2.4s ease-in-out infinite;
-}
-@keyframes ctaPulse {
-  0%,
+@keyframes cardReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1.5deg) scale(0.96);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) rotate(0.6deg) scale(1.01);
+    filter: blur(0);
+  }
   100% {
-    transform: scale(0.98);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.95;
+    transform: translateY(0) rotate(0deg) scale(1);
   }
 }
 
-.ctaSparkles {
+.receivedCard::before {
+  content: "";
   position: absolute;
-  inset: -28px;
+  inset: 14px;
+  border-radius: 18px;
+
+  border: 1px solid rgba(241, 108, 104, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(94, 198, 222, 0.16);
+
   pointer-events: none;
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 2px, transparent 3px),
-    radial-gradient(circle, rgba(255, 255, 255, 0.75) 1px, transparent 3px),
-    radial-gradient(circle, rgba(255, 255, 255, 0.55) 2px, transparent 4px);
-  background-size:
-    90px 90px,
-    140px 140px,
-    210px 210px;
-  background-position:
-    0 0,
-    30px 60px,
-    80px 20px;
-  opacity: 0.55;
-  animation: sparkleDrift 2.8s linear infinite;
-}
-@keyframes sparkleDrift {
-  to {
-    transform: translateY(16px);
-  }
 }
 
-/* =========================
+.receivedCard::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 10px;
+  width: 92px;
+  height: 26px;
+
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+
+  transform: rotate(-8deg);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.receivedCardLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 0 auto 10px;
+  padding: 6px 12px;
+
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(241, 108, 104, 0.18);
+
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
+}
+
+.receivedCardBody {
+  margin: 4px auto 12px;
+  padding: 10px 12px;
+
+  border-radius: 16px;
+  line-height: 1.3;
+
+  font-family: "Annie Use Your Telescope", cursive;
+  font-weight: 900;
+  font-size: clamp(18px, 2.6vw, 24px);
+
+  color: var(--pink);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(94, 198, 222, 0.55);
+
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12);
+}
+
+.receivedCardMeta {
+  display: grid;
+  gap: 6px;
+  margin: 10px auto 12px;
+}
+
+.receivedCardTo {
+  font-weight: 900;
+  font-size: 16px;
+  color: rgba(58, 43, 46, 0.9);
+}
+.receivedCardFrom {
+  font-weight: 900;
+  font-size: 15px;
+  opacity: 0.8;
+  color: rgba(58, 43, 46, 0.9);
+}
+
+.receivedCardImg {
+  width: min(520px, 86vw);
+  max-width: 100%;
+  height: auto;
+
+  display: block;
+  margin: 12px auto 2px;
+
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* download button (receiver) */
+.receivedCardActions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.receivedActionBtn {
+  border: 0;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow-md);
+
+  font-weight: 900;
+  color: var(--ink);
+}
+.receivedActionBtn:active {
+  transform: translateY(1px);
+}
+
+/* -------------------------
    RESPONSIVE
-========================= */
+------------------------- */
 @media (max-width: 768px) {
-  .questionFrame {
-    width: min(560px, 94vw);
-  }
   .heartBtn {
     width: 118px;
     height: 102px;
     font-size: 22px;
   }
+
+  .questionFrame {
+    width: min(560px, 94vw);
+  }
 }
 
 @media (max-width: 640px) {
-  .rightControls {
-    top: 12px;
-    right: 12px;
+  .cornerSix {
+    width: min(160px, 52vw);
+    bottom: -14px;
   }
+  .cornerSix--left {
+    left: -18px;
+  }
+  .cornerSix--right {
+    right: -18px;
+  }
+
   .ctaHeart {
     width: 152px;
     height: 52px;
@@ -745,7 +1068,29 @@
   .ctaLabel {
     font-size: 15px;
   }
+
   .questionTitle {
     max-width: 16ch;
+  }
+
+  .receivedCard {
+    width: min(560px, 94vw);
+    border-radius: 18px;
+  }
+  .receivedCard::before {
+    inset: 12px;
+  }
+  .receivedCardImg {
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  .yesScreen {
+    padding: 18px 12px;
+  }
+  .yesGif {
+    width: min(420px, 78vw);
+    max-height: 26vh;
+    object-fit: contain;
   }
 }
