@@ -36,12 +36,6 @@ const DUCK_SPOTS = [
   { left: 50, top: 88, size: 200, delay: 1.8 },
 ];
 
-const CUTE_YES_MESSAGES = [
-  "Life is better with you in it — today, tomorrow, and every day after 🌷 🦆✨",
-  "You make my world softer, brighter, and so much happier 💗✨ I’m so lucky to have you.",
-  "However love looks for us, I’m grateful we share it 💞 You mean more than you know",
-];
-
 function safeUUID() {
   return (
     crypto?.randomUUID?.() ??
@@ -52,6 +46,7 @@ function safeUUID() {
 export default function Valentine() {
   const navigate = useNavigate();
   const audioRef = useContext(MusicContext);
+  const [receiverCreateMode, setReceiverCreateMode] = useState(false);
 
   // -----------------------------
   // Mode: receiver (?card=...) or visitor
@@ -105,7 +100,7 @@ export default function Valentine() {
   // Flow state
   // -----------------------------
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
-  const [hasOpened, setHasOpened] = useState(false); // receiver only: envelope disappears after open
+  const [hasOpened, setHasOpened] = useState(false); // receiver only
   const [showQuestion, setShowQuestion] = useState(false);
   const [showCanvas, setShowCanvas] = useState(false);
 
@@ -123,7 +118,6 @@ export default function Valentine() {
   // YES state + falling hearts
   // -----------------------------
   const [yes, setYes] = useState(false);
-  const [yesMessage, setYesMessage] = useState("");
   const [fallingHearts, setFallingHearts] = useState([]);
 
   const spawnHearts = useCallback(() => {
@@ -191,7 +185,9 @@ export default function Valentine() {
   const downloadFromUrl = useCallback(
     async (url, filename = "valentine-card.png") => {
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, { mode: "cors" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         const blob = await res.blob();
         const objUrl = URL.createObjectURL(blob);
 
@@ -204,8 +200,14 @@ export default function Valentine() {
 
         URL.revokeObjectURL(objUrl);
       } catch (e) {
-        console.error(e);
-        alert("Couldn’t download this image.");
+        console.error("Download failed, falling back to opening image:", e);
+
+        // Fallback: open the image in a new tab so the user can long-press / save / download
+        // (This avoids CORS restrictions entirely)
+        window.open(url, "_blank", "noopener,noreferrer");
+
+        // Optional: keep your alert, but I’d soften it:
+        // alert("Your browser blocked the direct download. The image opened in a new tab so you can save it.");
       }
     },
     [],
@@ -216,7 +218,6 @@ export default function Valentine() {
   // -----------------------------
   const resetToEnvelope = useCallback(() => {
     setYes(false);
-    setYesMessage("");
     setFallingHearts([]);
 
     setShowCanvas(false);
@@ -226,33 +227,52 @@ export default function Valentine() {
     setNoStyle({ left: "68%", top: "62%" });
 
     setEnvelopeOpen(false);
-    setHasOpened(false); // receiver: show envelope again
-  }, []);
+    setHasOpened(false);
+
+    // ✅ IMPORTANT: if they arrived as receiver, next open should allow creating a card
+    if (isReceiver) setReceiverCreateMode(true);
+  }, [isReceiver]);
 
   // -----------------------------
   // Open envelope
   // -----------------------------
   const onEnvelopeOpen = useCallback(() => {
-    // stop spam clicking only while it is already open
     if (envelopeOpen) return;
 
     setEnvelopeOpen(true);
     playSfx("/seal-pop.mp3", 0.9);
 
-    // receiver: after open animation, hide envelope + show question
-    // visitor: after open animation, open canvas modal
     window.setTimeout(() => {
       if (isReceiver) {
-        setHasOpened(true);
-        setShowQuestion(true);
+        if (receiverCreateMode) {
+          setShowCanvas(true); // ✅ second open = create card
+        } else {
+          setHasOpened(true); // ✅ first open = question
+          setShowQuestion(true);
+        }
       } else {
         setShowCanvas(true);
       }
     }, 520);
-  }, [envelopeOpen, isReceiver, playSfx]);
+  }, [envelopeOpen, isReceiver, receiverCreateMode, playSfx]);
+
+  {
+    isReceiver && (
+      <button
+        className="ctaHeart"
+        onClick={() => {
+          setReceiverCreateMode(true);
+          setShowCanvas(true);
+        }}
+        type="button"
+      >
+        ...
+      </button>
+    );
+  }
 
   // -----------------------------
-  // Reset on tab switch / bfcache (fix missing flap etc.)
+  // Reset on tab switch / bfcache
   // -----------------------------
   useEffect(() => {
     const hardReset = () => {
@@ -281,12 +301,9 @@ export default function Valentine() {
   }, []);
 
   // -----------------------------
-  // YES click
+  // YES click (no cute messages)
   // -----------------------------
   const onYes = useCallback(() => {
-    const msg =
-      CUTE_YES_MESSAGES[Math.floor(Math.random() * CUTE_YES_MESSAGES.length)];
-    setYesMessage(msg);
     setYes(true);
     playSfx("/clap.mp3", 0.9);
     spawnHearts();
@@ -321,8 +338,8 @@ export default function Valentine() {
             🎵
           </button>
 
-          {/* Create card only if receiver */}
-          {isReceiver && (
+          {/* Keep as you had it: only receiver sees it in header */}
+          {isReceiver && !receiverCreateMode && (
             <button
               className="ctaHeart"
               onClick={() => setShowCanvas(true)}
@@ -411,8 +428,6 @@ export default function Valentine() {
       {/* YES SCREEN */}
       {yes && (
         <div className="yesScreen">
-          <div className="yesMessage">{yesMessage}</div>
-
           {receivedCard && (
             <>
               <div className="receivedCard">
@@ -420,27 +435,21 @@ export default function Valentine() {
                   <div className="receivedCardLabel">{receivedCard.label}</div>
                 )}
 
-                <div className="receivedCardBody">
-                  {receivedCard.note || "💌"}
-                </div>
-
-                <div className="receivedCardMeta">
-                  <div className="receivedCardTo">
-                    {receivedCard.toName
-                      ? `For ${receivedCard.toName}`
-                      : "For my Valentine"}
-                  </div>
-                  <div className="receivedCardFrom">
-                    — {receivedCard.fromName || "Someone who loves you"}
-                  </div>
-                </div>
-
-                {receivedCard.imageUrl && (
+                {/* ✅ Avoid duplicate message:
+                    - If image exists, show ONLY the image (PNG already contains message)
+                    - If no image, show ONLY the note text
+                */}
+                {receivedCard.imageUrl ? (
                   <img
                     className="receivedCardImg"
                     src={receivedCard.imageUrl}
                     alt="Valentine card"
+                    loading="lazy"
                   />
+                ) : (
+                  <div className="receivedCardBody">
+                    {receivedCard.note || "💌"}
+                  </div>
                 )}
               </div>
 
@@ -465,13 +474,7 @@ export default function Valentine() {
             </>
           )}
 
-          <img className="yesGif" src="/giphy.gif" alt="" aria-hidden="true" />
-
-          <button
-            className="backBtn"
-            type="button"
-            onClick={() => setYes(false)}
-          >
+          <button className="backBtn" type="button" onClick={resetToEnvelope}>
             ← Back
           </button>
         </div>

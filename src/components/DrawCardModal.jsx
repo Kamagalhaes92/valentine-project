@@ -6,15 +6,9 @@ const EMOJIS = ["💖", "😘", "🌹", "🦆", "✨"];
 const MAX_STROKES = 5;
 
 export default function DrawCardModal({ onClose }) {
-  // ---------------------------
-  // Refs
-  // ---------------------------
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
 
-  // ---------------------------
-  // Form state
-  // ---------------------------
   const [toName, setToName] = useState("");
   const [fromName, setFromName] = useState("");
   const [label, setLabel] = useState("");
@@ -22,17 +16,11 @@ export default function DrawCardModal({ onClose }) {
     "You are my heart, my life, my one and only thought. 💖",
   );
 
-  // ---------------------------
-  // Drawing state
-  // ---------------------------
   const [activeEmoji, setActiveEmoji] = useState(null);
   const [strokeCount, setStrokeCount] = useState(0);
   const [brush, setBrush] = useState(10);
   const [color, setColor] = useState("#ff4f86");
 
-  // ---------------------------
-  // Preview / share
-  // ---------------------------
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
   const [shareUrl, setShareUrl] = useState("");
@@ -45,9 +33,6 @@ export default function DrawCardModal({ onClose }) {
   );
   const strokesLeft = Math.max(0, MAX_STROKES - strokeCount);
 
-  // ---------------------------
-  // Canvas helpers
-  // ---------------------------
   const getCtx = useCallback(() => {
     const c = canvasRef.current;
     return c ? c.getContext("2d") : null;
@@ -72,7 +57,6 @@ export default function DrawCardModal({ onClose }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // snapshot so resize doesn't wipe drawings
     const snap = document.createElement("canvas");
     snap.width = canvas.width;
     snap.height = canvas.height;
@@ -84,10 +68,8 @@ export default function DrawCardModal({ onClose }) {
     canvas.width = Math.max(1, Math.floor(rect.width * dpr));
     canvas.height = Math.max(1, Math.floor(rect.height * dpr));
 
-    // map drawing coords to CSS pixels
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // restore snapshot scaled to new size
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(
@@ -113,14 +95,10 @@ export default function DrawCardModal({ onClose }) {
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }, []);
 
-  // ---------------------------
-  // Drawing logic
-  // ---------------------------
   const stampEmojiAt = useCallback(
     (emoji, x, y) => {
       const ctx = getCtx();
       if (!ctx) return;
-
       ctx.save();
       ctx.shadowBlur = 0;
       ctx.font = "44px serif";
@@ -139,17 +117,14 @@ export default function DrawCardModal({ onClose }) {
       if (!canvas || !ctx) return;
 
       canvas.setPointerCapture?.(e.pointerId);
-
       const { x, y } = getPos(e);
 
-      // Emoji stamping
       if (activeEmoji) {
         stampEmojiAt(activeEmoji, x, y);
         setActiveEmoji(null);
         return;
       }
 
-      // Limit strokes
       if (strokeCount >= MAX_STROKES) return;
 
       setStrokeCount((n) => n + 1);
@@ -179,15 +154,13 @@ export default function DrawCardModal({ onClose }) {
     drawingRef.current = false;
   }, []);
 
-  // ---------------------------
-  // Build card PNG
-  // ---------------------------
+  // ✅ NEW LOOK: modern “polaroid” card, no duplicated text inside the PNG
   const buildFinalCardDataUrl = useCallback(() => {
     const drawCanvas = canvasRef.current;
     const dpr = window.devicePixelRatio || 1;
 
-    const W = 720;
-    const H = 560;
+    const W = 900;
+    const H = 1200;
 
     const out = document.createElement("canvas");
     out.width = W * dpr;
@@ -197,58 +170,96 @@ export default function DrawCardModal({ onClose }) {
     if (!ctx) return "";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // background
-    ctx.fillStyle = "#ffeaf3";
+    // Soft gradient background
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#ffe8f2");
+    g.addColorStop(1, "#e8f6ff");
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
-    // card
+    // Card shell
     ctx.fillStyle = "rgba(255,255,255,0.94)";
-    roundRect(ctx, 38, 38, W - 76, H - 76, 26);
+    roundRect(ctx, 70, 90, W - 140, H - 180, 44);
     ctx.fill();
 
-    // border
-    ctx.strokeStyle = "rgba(255, 79, 134, 0.40)";
+    // Subtle border
+    ctx.strokeStyle = "rgba(255, 79, 134, 0.22)";
     ctx.lineWidth = 6;
-    roundRect(ctx, 38, 38, W - 76, H - 76, 26);
+    roundRect(ctx, 70, 90, W - 140, H - 180, 44);
     ctx.stroke();
 
-    // message
-    ctx.fillStyle = "rgba(25, 25, 25, 0.92)";
-    ctx.font = "700 26px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctx.textAlign = "center";
-    wrapText(ctx, note || "Happy Valentine’s Day! 💖", W / 2, 105, W - 140, 30);
+    // Optional label as small pill (NOT required)
+    const pill = label?.trim();
+    if (pill) {
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 79, 134, 0.10)";
+      roundRect(ctx, 240, 125, 420, 54, 999);
+      ctx.fill();
 
-    // label
-    if (label.trim()) {
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.font = "700 16px system-ui, -apple-system, Segoe UI, sans-serif";
-      ctx.fillText(label.trim(), W / 2, 155);
+      ctx.fillStyle = "rgba(25,25,25,0.78)";
+      ctx.font = "800 24px system-ui, -apple-system, Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(pill, W / 2, 162);
+      ctx.restore();
     }
 
-    // drawing frame
-    ctx.strokeStyle = "rgba(0,0,0,0.10)";
-    ctx.lineWidth = 3;
-    roundRect(ctx, 110, 180, W - 220, 260, 18);
+    // ✅ TO line
+    ctx.fillStyle = "rgba(255, 79, 134, 0.95)";
+    ctx.font = "900 44px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`To: ${toName.trim() || "________"}`, W / 2, 230);
+
+    // Drawing “polaroid frame”
+    const frameX = 140;
+    const frameY = 290;
+    const frameW = W - 280;
+    const frameH = 690;
+
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    roundRect(ctx, frameX, frameY, frameW, frameH, 36);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(0,0,0,0.08)";
+    ctx.lineWidth = 4;
+    roundRect(ctx, frameX, frameY, frameW, frameH, 36);
     ctx.stroke();
 
-    // drawing content (note: your canvas is already DPI scaled; drawing it into CSS pixels is okay here)
-    if (drawCanvas) ctx.drawImage(drawCanvas, 110, 180, W - 220, 260);
+    // subtle lines texture
+    ctx.save();
+    ctx.globalAlpha = 0.1;
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    for (let y = frameY + 36; y < frameY + frameH; y += 46) {
+      ctx.beginPath();
+      ctx.moveTo(frameX + 28, y);
+      ctx.lineTo(frameX + frameW - 28, y);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    // to/from
-    ctx.fillStyle = "#ff4f86";
-    ctx.font = "800 32px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctx.fillText(toName ? `For ${toName}` : "For my Valentine", W / 2, 485);
+    // user drawing inside frame
+    if (drawCanvas) {
+      ctx.drawImage(
+        drawCanvas,
+        frameX + 18,
+        frameY + 18,
+        frameW - 36,
+        frameH - 36,
+      );
+    }
 
-    ctx.fillStyle = "rgba(30,30,30,0.62)";
-    ctx.font = "700 22px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctx.fillText(fromName ? `From ${fromName}` : "From ________", W / 2, 522);
+    // ✅ FROM line
+    ctx.fillStyle = "rgba(20,20,20,0.70)";
+    ctx.font = "900 38px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText(`From: ${fromName.trim() || "________"}`, W / 2, 1045);
+
+    // ✅ cute footer message (not the big note)
+    ctx.fillStyle = "rgba(255, 79, 134, 0.85)";
+    ctx.font = "800 28px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText("Happy Valentine’s Day 💗", W / 2, 1105);
 
     return out.toDataURL("image/png", 0.92);
-  }, [fromName, label, note, toName]);
+  }, [toName, fromName, label]);
 
-  // ---------------------------
-  // Actions
-  // ---------------------------
   const clearCanvas = useCallback(() => {
     setStrokeCount(0);
     setActiveEmoji(null);
@@ -276,7 +287,6 @@ export default function DrawCardModal({ onClose }) {
   const download = useCallback(() => {
     const url = previewUrl || buildFinalCardDataUrl();
     if (!url) return;
-
     const a = document.createElement("a");
     a.href = url;
     a.download = toName
@@ -291,7 +301,7 @@ export default function DrawCardModal({ onClose }) {
       return;
     }
 
-    // avoid re-uploading if we already have a shareUrl
+    // if already generated, just reopen preview
     if (shareUrl) {
       setShowPreview(true);
       return;
@@ -307,16 +317,19 @@ export default function DrawCardModal({ onClose }) {
       const blob = await (await fetch(dataUrl)).blob();
       const imageUrl = await uploadCardImage(blob, "valentine.png");
 
+      // ✅ note is stored in Firestore (so it shows on Valentine page once),
+      // but NOT drawn into the PNG anymore (no duplication)
       const cardId = await saveCard({
         toName: toName.trim(),
         fromName: fromName.trim(),
         label: label.trim(),
-        note,
+        note: note.trim(),
         imageUrl,
         createdAt: Date.now(),
       });
 
-      const url = `${window.location.origin}/?card=${cardId}`;
+      // ✅ match your routing: /valentine?card=ID
+      const url = `${window.location.origin}/valentine?card=${cardId}`;
       setShareUrl(url);
     } catch (err) {
       console.error(err);
@@ -346,9 +359,6 @@ export default function DrawCardModal({ onClose }) {
     }
   }, [shareUrl]);
 
-  // ---------------------------
-  // Effects
-  // ---------------------------
   useEffect(() => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
@@ -378,9 +388,6 @@ export default function DrawCardModal({ onClose }) {
     };
   }, [onClose, showPreview]);
 
-  // ---------------------------
-  // Render
-  // ---------------------------
   return (
     <div
       className="dcOverlay"
@@ -392,7 +399,7 @@ export default function DrawCardModal({ onClose }) {
     >
       <div className="dcModal">
         <header className="dcTop">
-          <div className="dcTitle">Draw your Valentine card ✍️</div>
+          <div className="dcTitle">Create a card ✍️</div>
           <button className="dcClose" onClick={onClose} aria-label="Close">
             ✕
           </button>
@@ -427,7 +434,7 @@ export default function DrawCardModal({ onClose }) {
             </label>
 
             <label className="dcField dcFieldWide">
-              Message
+              Message (shows once on the final page)
               <input
                 className="dcInput"
                 value={note}
@@ -440,7 +447,7 @@ export default function DrawCardModal({ onClose }) {
             </label>
 
             <label className="dcField dcFieldWide">
-              Label (optional)
+              Title / Label (optional)
               <input
                 className="dcInput"
                 value={label}
@@ -448,7 +455,7 @@ export default function DrawCardModal({ onClose }) {
                   setLabel(e.target.value);
                   setShareUrl("");
                 }}
-                placeholder="ex: For Mom / For Friend"
+                placeholder="ex: For my Valentine / For Mom"
               />
             </label>
 
@@ -532,9 +539,6 @@ export default function DrawCardModal({ onClose }) {
             type="button"
             onClick={share}
             disabled={isSaving || !canShare}
-            title={
-              !canShare ? "Add To and From to generate a share link 💌" : ""
-            }
           >
             {isSaving ? "Saving..." : "Share 💌"}
           </button>
@@ -564,7 +568,7 @@ export default function DrawCardModal({ onClose }) {
         <div className="dcPreviewOverlay" role="dialog" aria-modal="true">
           <div className="dcPreviewModal">
             <div className="dcPreviewTop">
-              <div className="dcPreviewTitle">Card Preview</div>
+              <div className="dcPreviewTitle">Preview</div>
               <button
                 className="dcClose"
                 type="button"
@@ -581,39 +585,23 @@ export default function DrawCardModal({ onClose }) {
               <button className="dcBtn" type="button" onClick={download}>
                 Download
               </button>
-              {shareUrl && (
-                <>
-                  <button
-                    className="dcBtn dcBtnPrimary"
-                    type="button"
-                    onClick={copyLink}
-                  >
-                    {copied ? "Copied! 💘" : "Copy link"}
-                  </button>
-
-                  <a
-                    className="dcLink"
-                    href={`https://wa.me/?text=${encodeURIComponent(`I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    WhatsApp
-                  </a>
-
-                  <a
-                    className="dcLink"
-                    href={`sms:?&body=${encodeURIComponent(`I need to ask you something… 💌 ${shareUrl}`)}`}
-                  >
-                    Text
-                  </a>
-
-                  <a
-                    className="dcLink"
-                    href={`mailto:?subject=${encodeURIComponent("Can I ask you something? 💌")}&body=${encodeURIComponent(`I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`)}`}
-                  >
-                    Email
-                  </a>
-                </>
+              {!shareUrl ? (
+                <button
+                  className="dcBtn dcBtnPrimary"
+                  type="button"
+                  onClick={share}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Saving..." : "Generate link 💌"}
+                </button>
+              ) : (
+                <button
+                  className="dcBtn dcBtnPrimary"
+                  type="button"
+                  onClick={copyLink}
+                >
+                  {copied ? "Copied! 💘" : "Copy link"}
+                </button>
               )}
             </div>
           </div>
@@ -623,9 +611,6 @@ export default function DrawCardModal({ onClose }) {
   );
 }
 
-// ---------------------------
-// Helpers
-// ---------------------------
 function roundRect(ctx, x, y, w, h, r) {
   const rr = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
@@ -635,24 +620,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, rr);
   ctx.arcTo(x, y, x + w, y, rr);
   ctx.closePath();
-}
-
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-  const words = String(text).split(" ");
-  let line = "";
-  let yy = y;
-
-  for (let i = 0; i < words.length; i++) {
-    const test = line + words[i] + " ";
-    if (ctx.measureText(test).width > maxWidth && i > 0) {
-      ctx.fillText(line.trim(), x, yy);
-      line = words[i] + " ";
-      yy += lineHeight;
-    } else {
-      line = test;
-    }
-  }
-  ctx.fillText(line.trim(), x, yy);
 }
 
 function slug(s) {
