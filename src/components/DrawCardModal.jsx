@@ -329,7 +329,7 @@ export default function DrawCardModal({ onClose }) {
       });
 
       // ✅ match your routing: /valentine?card=ID
-      const url = `${window.location.origin}/valentine?card=${cardId}`;
+      const url = `${window.location.origin}/?card=${cardId}`;
       setShareUrl(url);
     } catch (err) {
       console.error(err);
