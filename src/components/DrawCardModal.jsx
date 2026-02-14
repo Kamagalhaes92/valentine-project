@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "../styles/drawCard.css";
 
+import { saveCard, uploadCardImage } from "../firebase";
+
 const EMOJIS = ["💖", "😘", "🌹", "🦆", "✨"];
 
 export default function DrawCardModal({ onClose }) {
+  const [shareUrl, setShareUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   // ---------------------------
   // Refs
   // ---------------------------
@@ -16,6 +20,8 @@ export default function DrawCardModal({ onClose }) {
   const [activeEmoji, setActiveEmoji] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [strokeCount, setStrokeCount] = useState(0);
+  const MAX_STROKES = 5;
 
   // ---------------------------
   // Card fields
@@ -23,6 +29,7 @@ export default function DrawCardModal({ onClose }) {
   const [toName, setToName] = useState("");
   const [fromName, setFromName] = useState("");
   const [label, setLabel] = useState("");
+  const [copied, setCopied] = useState(false);
   const [note, setNote] = useState(
     "You are my heart, my life, my one and only thought. 💖",
   );
@@ -108,8 +115,8 @@ export default function DrawCardModal({ onClose }) {
     const drawCanvas = canvasRef.current;
     const dpr = window.devicePixelRatio || 1;
 
-    const W = 900;
-    const H = 600;
+    const W = 720;
+    const H = 480;
 
     const out = document.createElement("canvas");
     out.width = W * dpr;
@@ -165,7 +172,7 @@ export default function DrawCardModal({ onClose }) {
     ctx.font = "700 22px system-ui, -apple-system, Segoe UI, sans-serif";
     ctx.fillText(fromName ? `From ${fromName}` : "From ________", W / 2, 548);
 
-    return out.toDataURL("image/png");
+    return out.toDataURL("image/png", 0.85);
   }, [fromName, label, note, toName]);
 
   // ---------------------------
@@ -189,6 +196,7 @@ export default function DrawCardModal({ onClose }) {
 
   const onPointerDown = useCallback(
     (e) => {
+      if (!activeEmoji && strokeCount >= MAX_STROKES) return;
       const canvas = canvasRef.current;
       const ctx = getCtx();
       if (!canvas || !ctx) return;
@@ -204,6 +212,7 @@ export default function DrawCardModal({ onClose }) {
         return;
       }
 
+      setStrokeCount((n) => n + 1);
       drawingRef.current = true;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -236,6 +245,7 @@ export default function DrawCardModal({ onClose }) {
   // Actions
   // ---------------------------
   const clearCanvas = useCallback(() => {
+    setStrokeCount(0);
     const canvas = canvasRef.current;
     const ctx = getCtx();
     if (!canvas || !ctx) return;
@@ -243,6 +253,7 @@ export default function DrawCardModal({ onClose }) {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     ctx.restore();
 
     setPreviewUrl("");
@@ -266,30 +277,41 @@ export default function DrawCardModal({ onClose }) {
   }, [buildFinalCardDataUrl, previewUrl, toName]);
 
   const share = useCallback(async () => {
-    const url = previewUrl || buildFinalCardDataUrl();
-    setPreviewUrl(url);
+    try {
+      setIsSaving(true);
 
-    const blob = await (await fetch(url)).blob();
-    const fileName = toName
-      ? `valentine-for-${toName}.png`
-      : "valentine-card.png";
-    const file = new File([blob], fileName, { type: "image/png" });
+      // Build preview (dataUrl)
+      const dataUrl = previewUrl || buildFinalCardDataUrl();
+      setPreviewUrl(dataUrl);
+      setShowPreview(true);
 
-    if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({
-          title: "Valentine Card 💘",
-          text: toName ? `A card for ${toName}` : "I made you a card 💌",
-          files: [file],
-        });
-        return;
-      } catch {
-        return;
-      }
+      // Convert to Blob and upload to Storage
+      const blob = await (await fetch(dataUrl)).blob();
+      const imageUrl = await uploadCardImage(blob, "valentine.png");
+
+      // Save card to Firestore (store the imageUrl from Storage!)
+      const cardId = await saveCard({
+        toName,
+        fromName,
+        label,
+        note,
+        imageUrl, // <- this is what Valentine page must render
+        createdAt: Date.now(),
+      });
+
+      // Create share link (will be localhost in dev, real domain after deploy)
+      const url = `${window.location.origin}/valentine?card=${cardId}`;
+      setShareUrl(url);
+
+      // optional: auto copy
+      // await navigator.clipboard.writeText(url);
+    } catch (err) {
+      console.error(err);
+      alert(`Share failed: ${err?.message || err}`);
+    } finally {
+      setIsSaving(false);
     }
-
-    download();
-  }, [buildFinalCardDataUrl, download, previewUrl, toName]);
+  }, [previewUrl, buildFinalCardDataUrl, toName, fromName, label, note]);
 
   // ---------------------------
   // Mount effects
@@ -371,7 +393,10 @@ export default function DrawCardModal({ onClose }) {
               <input
                 className="metaInput"
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(e) => {
+                  setNote(e.target.value);
+                  setShareUrl("");
+                }}
                 placeholder="Write something cute…"
               />
             </label>
@@ -415,6 +440,9 @@ export default function DrawCardModal({ onClose }) {
             )}
 
             <div className="emojiTitle">Add cute emojis:</div>
+            <div className="strokeHint">
+              Strokes left: {Math.max(0, MAX_STROKES - strokeCount)}
+            </div>
 
             <div className="emojiBtns">
               {EMOJIS.map((emoji) => (
@@ -455,10 +483,31 @@ export default function DrawCardModal({ onClose }) {
           <button type="button" onClick={download}>
             Download
           </button>
-          <button type="button" onClick={share}>
-            Share 💌
+          <button type="button" onClick={share} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Share 💌"}
           </button>
         </div>
+
+        {shareUrl && (
+          <div className="shareInline">
+            <div className="shareInlineTitle">
+              Your surprise link is ready 💌
+            </div>
+            <input
+              className="shareInlineUrl"
+              value={shareUrl}
+              readOnly
+              onFocus={(e) => e.target.select()}
+            />
+
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(shareUrl)}
+            >
+              Copy link
+            </button>
+          </div>
+        )}
 
         {showPreview && previewUrl && (
           <div className="previewOverlay" role="dialog" aria-modal="true">
@@ -488,6 +537,58 @@ export default function DrawCardModal({ onClose }) {
                 <button type="button" onClick={share}>
                   Share 💌
                 </button>
+                {shareUrl && (
+                  <div className="shareBox">
+                    <div className="shareTitle">
+                      Okay… now send the surprise 💌
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(shareUrl);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 1400);
+                        } catch {
+                          alert(
+                            "Couldn’t copy. Select the link and copy manually.",
+                          );
+                        }
+                      }}
+                    >
+                      {copied ? "Copied! 💘" : "Copy link"}
+                    </button>
+
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(
+                        `I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`,
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp
+                    </a>
+
+                    <a
+                      href={`sms:?&body=${encodeURIComponent(
+                        `I need to ask you something… 💌 ${shareUrl}`,
+                      )}`}
+                    >
+                      Text message
+                    </a>
+
+                    <a
+                      href={`mailto:?subject=${encodeURIComponent(
+                        "Can I ask you something? 💌",
+                      )}&body=${encodeURIComponent(
+                        `I need to ask you something… 💌 Promise you’ll go all the way to the end: ${shareUrl}`,
+                      )}`}
+                    >
+                      Email
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

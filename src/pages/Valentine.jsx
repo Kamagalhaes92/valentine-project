@@ -3,6 +3,7 @@ import "../styles/valentine.css";
 import { MusicContext } from "../App";
 import DrawCardModal from "../components/DrawCardModal";
 import HamburgerMenu from "../components/HamburgerMenu";
+import { loadCardById } from "../firebase";
 
 export default function Valentine() {
   const audioRef = useContext(MusicContext);
@@ -10,6 +11,11 @@ export default function Valentine() {
   const [fallingHearts, setFallingHearts] = useState([]);
   const [yes, setYes] = useState(false);
   const [showCanvas, setShowCanvas] = useState(false);
+  const [receivedCard, setReceivedCard] = useState(null);
+  const cardId = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("card");
+  }, []);
 
   // ✅ MOBILE: only 2 ducks
   const [isMobile, setIsMobile] = useState(
@@ -50,6 +56,10 @@ export default function Valentine() {
     setTimeout(() => setFallingHearts([]), 5200);
   };
 
+  useEffect(() => {
+    if (!cardId) return;
+    loadCardById(cardId).then(setReceivedCard).catch(console.error);
+  }, [cardId]);
   // Ducks
   const duckImages = useMemo(
     () => [
@@ -230,7 +240,42 @@ export default function Valentine() {
       {yes && (
         <div className="yesScreen">
           <div className="yesMessage">{yesMessage}</div>
-          <img className="yesGif" src="/giphy.gif" alt="" aria-hidden="true" />
+
+          {/* 💌 Shared card appears here */}
+          {receivedCard && (
+            <div className="receivedCard">
+              {receivedCard.label?.trim() && (
+                <div className="receivedCardLabel">{receivedCard.label}</div>
+              )}
+
+              <div className="receivedCardBody">
+                {receivedCard.note || "💌"}
+              </div>
+
+              <div className="receivedCardMeta">
+                <div className="receivedCardTo">
+                  {receivedCard.toName
+                    ? `For ${receivedCard.toName}`
+                    : "For my Valentine"}
+                </div>
+                <div className="receivedCardFrom">
+                  — {receivedCard.fromName || "Someone who loves you"}
+                </div>
+              </div>
+
+              {receivedCard.imageUrl && (
+                <img
+                  className="receivedCardImg"
+                  src={receivedCard.imageUrl}
+                  alt="Valentine card"
+                  loading="lazy"
+                />
+              )}
+            </div>
+          )}
+
+          <img className="yesGif" src="/giphy.gif" alt="" />
+
           <button className="backBtn" onClick={() => setYes(false)}>
             ← Back
           </button>
@@ -246,7 +291,7 @@ export default function Valentine() {
             <div className="buttonRow">
               <button
                 className="heartBtn heartBtn--yes"
-                onClick={() => {
+                onClick={async () => {
                   const random =
                     cuteYesMessages[
                       Math.floor(Math.random() * cuteYesMessages.length)
@@ -257,6 +302,9 @@ export default function Valentine() {
 
                   playSfx("/clap.mp3", 0.9);
                   spawnHearts();
+
+                  // 🔗 check if someone opened a shared link
+                  setYes(true);
                 }}
               >
                 Yes

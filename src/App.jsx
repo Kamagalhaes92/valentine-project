@@ -9,11 +9,11 @@ export const MusicContext = createContext();
 export default function App() {
   const audioRef = useRef(null);
 
+  // 🎵 MUSIC (your existing logic)
   useEffect(() => {
     const audio = new Audio("/music.mp3");
     audio.loop = true;
     audio.volume = 0.35;
-
     audioRef.current = audio;
 
     // Start music on first interaction (browser rule)
@@ -30,6 +30,16 @@ export default function App() {
       audio.pause();
       audio.src = "";
     };
+  }, []);
+
+  // 🔗 SHARE LINK CAPTURE: /?card=abc123
+  // Stores card id for this visit so user still goes through Intro -> Valentine -> YES -> reveal
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const cardId = url.searchParams.get("card");
+    if (cardId) {
+      sessionStorage.setItem("pendingCardId", cardId);
+    }
   }, []);
 
   return (
