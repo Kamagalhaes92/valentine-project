@@ -33,6 +33,15 @@ const LEFT_JOKES = [
   "If you keep going left, you’ll end up in 2007 MySpace 😭",
 ];
 
+const PROFILE_LINES = [
+  "You clicked me! I’m working hard 🦆💻",
+  "Loading cuteness… 100% ✅",
+  "Bestie, I’m just a lil gif ✨",
+  "Plot twist: you’re the main character 💌",
+  "I’m just supervising here. Carry on 😌",
+  "Bloop! You found the secret button 🫧",
+];
+
 const STATUS_LINES = [
   "Feeling romantic 💌",
   "Feeling sparkly ✨",
@@ -129,6 +138,36 @@ function StampNote({
 export default function Intro() {
   const navigate = useNavigate();
   const audioRef = useContext(MusicContext);
+
+  const [profileLine, setProfileLine] = useState("");
+  const [profilePop, setProfilePop] = useState(false);
+  const [profileSparkles, setProfileSparkles] = useState([]);
+
+  const onProfileClick = useCallback(() => {
+    // pick a random line
+    const line =
+      PROFILE_LINES[Math.floor(Math.random() * PROFILE_LINES.length)];
+    setProfileLine(line);
+
+    // pop animation
+    setProfilePop(true);
+    window.setTimeout(() => setProfilePop(false), 520);
+
+    // spawn a few sparkles
+    const now = Date.now();
+    const burst = Array.from({ length: 10 }).map((_, i) => ({
+      id: `p_${now}_${i}`,
+      x: 20 + Math.random() * 60, // %
+      y: 15 + Math.random() * 55, // %
+      s: 0.6 + Math.random() * 0.9,
+      d: 650 + Math.random() * 400,
+    }));
+    setProfileSparkles(burst);
+
+    // auto-hide message + clear sparkles
+    window.setTimeout(() => setProfileLine(""), 1800);
+    window.setTimeout(() => setProfileSparkles([]), 900);
+  }, []);
 
   // ✅ IMPORTANT: these refs MUST live in Intro (not inside StampNote)
   const sceneRef = useRef(null);
@@ -313,8 +352,6 @@ export default function Intro() {
     return () => clearTimeout(startTimer);
   }, [bubbleText, speak, dialogueIndex, sceneReady]);
 
-  // ✅ SINGLE source of truth: duckNearDoor (px math inside scene)
-  // ✅ SINGLE source of truth: duckNearDoor (X-only, reliable on desktop)
   const [duckNearDoor, setDuckNearDoor] = useState(false);
 
   const updateNearDoor = useCallback(() => {
@@ -463,9 +500,33 @@ export default function Intro() {
         {/* LEFT */}
         <aside className="leftCol" aria-label="Left column">
           <section className="leftCard leftCard--profile">
-            <div className="profileWrap">
+            <button
+              type="button"
+              className={`profileWrap ${profilePop ? "profileWrap--pop" : ""}`}
+              onClick={onProfileClick}
+              aria-label="Profile surprise"
+            >
               <img className="profileGif" src="/profile.gif" alt="Profile" />
-            </div>
+
+              {/* sparkles */}
+              {profileSparkles.map((s) => (
+                <span
+                  key={s.id}
+                  className="profileSparkle"
+                  style={{
+                    left: `${s.x}%`,
+                    top: `${s.y}%`,
+                    transform: `translate(-50%, -50%) scale(${s.s})`,
+                    animationDuration: `${s.d}ms`,
+                  }}
+                />
+              ))}
+
+              {/* cute speech bubble */}
+              {profileLine && (
+                <div className="profileBubble">{profileLine}</div>
+              )}
+            </button>
           </section>
 
           <section className="leftCard leftCard--quotes">
