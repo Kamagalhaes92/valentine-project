@@ -184,12 +184,6 @@ export default function HamburgerMenu() {
                 <GitHubIcon />
               </IconLink>
             </div>
-
-            <div className="aboutActions">
-              <button className="aboutBtn" onClick={() => setAboutOpen(false)}>
-                Close
-              </button>
-            </div>
           </div>
         </>
       )}
